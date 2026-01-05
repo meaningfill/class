@@ -1,0 +1,18 @@
+
+# Step 03. 컴포넌트 개발 (Design Tokens & Atoms)
+
+브랜드의 인상을 결정하는 디자인 규칙을 정하고, 가장 작은 단위의 컴포넌트(Atoms)를 제작합니다.
+
+## 작업 내용
+- 디자인 토큰 정의 (Color Palette, Typography, Spacing, Shadows)
+- 공통 UI 컴포넌트 제작 (Button, Input, Card, Badge)
+- Tailwind CSS 설정값 확정
+
+## AI용 프롬프트
+> "이 서비스의 브랜드 키워드는 '전문적인', '감각적인', '신뢰할 수 있는'이야. 이를 바탕으로 Tailwind CSS 설정(tailwind.config.js)에 들어갈 디자인 토큰을 정의해줘.
+> 
+> 포함 내용:
+> 1. 메인 컬러(핑크-퍼플 그라데이션)와 보조 컬러(슬레이트 그레이 등)의 hex 값.
+> 2. Pretendard 폰트를 활용한 타이포그래피 스케일 (h1~p).
+> 3. 부드러운 느낌을 주는 'shadow-soft' 값 정의.
+> 4. React와 Lucide-react를 사용해서 가장 기본이 되는 'Action Button' 컴포넌트와 'Feature Card' 컴포넌트의 기본 구조 코드를 작성해줘."
