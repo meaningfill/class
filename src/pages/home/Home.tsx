@@ -5,7 +5,6 @@ import IntroSection from './components/IntroSection';
 import Comparison from './components/Comparison';
 import CurriculumSection from './components/CurriculumSection';
 import PortfolioSection from './components/PortfolioSection';
-import CateringOrderSection from './components/CateringOrderSection';
 import ScheduleSection from './components/ScheduleSection';
 import WebsiteInquirySection from './components/WebsiteInquirySection';
 import Footer from './components/Footer';
@@ -20,7 +19,6 @@ const Home: React.FC = () => {
         <IntroSection />
         <CurriculumSection />
         <PortfolioSection />
-        <CateringOrderSection />
         <ScheduleSection />
         <WebsiteInquirySection />
       </main>

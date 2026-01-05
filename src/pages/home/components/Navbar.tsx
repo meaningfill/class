@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Navbar() {
@@ -16,7 +16,6 @@ export default function Navbar() {
   }, []);
 
   const scrollToSection = (sectionId: string) => {
-    // 홈페이지가 아니면 먼저 홈으로 이동
     if (location.pathname !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -61,31 +60,43 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogoClick}>
-            <div className={`w-12 h-12 flex items-center justify-center rounded-full ${isScrolled ? 'bg-gradient-to-r from-pink-500 to-purple-600' : 'bg-gradient-to-r from-pink-400 to-purple-500'}`}>
-              <i className={`ri-restaurant-2-line text-2xl text-white`}></i>
+            <div
+              className={`w-12 h-12 flex items-center justify-center rounded-full ${
+                isScrolled
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-600'
+                  : 'bg-gradient-to-r from-pink-400 to-purple-500'
+              }`}
+            >
+              <i className="ri-restaurant-2-line text-2xl text-white"></i>
             </div>
-            <span className={`text-xl font-bold ${isScrolled ? 'text-slate-900' : 'text-slate-900'}`}>
-              Order Builder
-            </span>
+            <span className="text-xl font-bold text-slate-900">Order Builder</span>
           </div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
             <button
-              onClick={() => scrollToSection('intro')}
+              onClick={handleLogoClick}
               className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${
                 isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
               }`}
             >
-              클래스 소개
+              HOME
             </button>
             <button
-              onClick={() => navigateToPage('/portfolio')}
+              onClick={() => navigateToPage('/classes')}
               className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${
                 isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
               }`}
             >
-              포트폴리오
+              클래스소개
+            </button>
+            <button
+              onClick={() => scrollToSection('portfolio')}
+              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${
+                isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
+              }`}
+            >
+              포트폴리오&케이터링 주문
             </button>
             <button
               onClick={() => navigateToPage('/blog')}
@@ -96,18 +107,10 @@ export default function Navbar() {
               블로그
             </button>
             <button
-              onClick={() => scrollToSection('order')}
-              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${
-                isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
-              }`}
-            >
-              케이터링 주문
-            </button>
-            <button
               onClick={() => scrollToSection('website-inquiry')}
               className="px-6 py-2.5 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-[15px] font-bold rounded-full hover:shadow-lg hover:shadow-pink-300/50 transition-all duration-300 whitespace-nowrap cursor-pointer"
             >
-              웹사이트 제작 문의
+              웹사이트 제작문의
             </button>
           </div>
 
@@ -128,16 +131,22 @@ export default function Navbar() {
         <div className="md:hidden bg-white border-t border-slate-200 shadow-lg">
           <div className="px-6 py-4 space-y-3">
             <button
-              onClick={() => scrollToSection('intro')}
+              onClick={handleLogoClick}
               className="block w-full text-left px-4 py-2 text-[15px] font-bold text-slate-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
-              클래스 소개
+              HOME
             </button>
             <button
-              onClick={() => navigateToPage('/portfolio')}
+              onClick={() => navigateToPage('/classes')}
               className="block w-full text-left px-4 py-2 text-[15px] font-bold text-slate-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
-              포트폴리오
+              클래스소개
+            </button>
+            <button
+              onClick={() => scrollToSection('portfolio')}
+              className="block w-full text-left px-4 py-2 text-[15px] font-bold text-slate-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
+            >
+              포트폴리오&케이터링 주문
             </button>
             <button
               onClick={() => navigateToPage('/blog')}
@@ -146,16 +155,10 @@ export default function Navbar() {
               블로그
             </button>
             <button
-              onClick={() => scrollToSection('order')}
-              className="block w-full text-left px-4 py-2 text-[15px] font-bold text-slate-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
-            >
-              케이터링 주문
-            </button>
-            <button
               onClick={() => scrollToSection('website-inquiry')}
               className="block w-full text-center px-4 py-2.5 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-[15px] font-bold rounded-lg hover:shadow-lg transition-all duration-300 whitespace-nowrap cursor-pointer"
             >
-              웹사이트 제작 문의
+              웹사이트 제작문의
             </button>
           </div>
         </div>

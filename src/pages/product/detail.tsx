@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
 import { products } from '../../mocks/products';
 
+const MIN_ORDER_QUANTITY = 30;
+
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [showOrderModal, setShowOrderModal] = useState(false);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(MIN_ORDER_QUANTITY);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,7 +19,7 @@ export default function ProductDetailPage() {
     eventDate: '',
     guestCount: '',
     selectedMenu: '',
-    quantity: '1',
+    quantity: MIN_ORDER_QUANTITY.toString(),
     budget: '',
     message: ''
   });
@@ -36,23 +38,23 @@ export default function ProductDetailPage() {
 
     // Product Schema
     const productSchema = {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": product.title,
-      "description": product.detailed_description,
-      "image": product.image_url,
-      "offers": {
-        "@type": "Offer",
-        "price": product.price_number,
-        "priceCurrency": "KRW",
-        "availability": "https://schema.org/InStock",
-        "url": `${siteUrl}/product/${product.id}`
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.title,
+      description: product.detailed_description,
+      image: product.image_url,
+      offers: {
+        '@type': 'Offer',
+        price: product.price_number,
+        priceCurrency: 'KRW',
+        availability: 'https://schema.org/InStock',
+        url: `${siteUrl}/product/${product.id}`
       },
-      "brand": {
-        "@type": "Brand",
-        "name": "Order Builder"
+      brand: {
+        '@type': 'Brand',
+        name: 'Order Builder'
       },
-      "category": product.event_type
+      category: product.event_type
     };
 
     const script = document.createElement('script');
@@ -61,7 +63,7 @@ export default function ProductDetailPage() {
     document.head.appendChild(script);
 
     document.title = `${product.title} | Order Builder`;
-    
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', product.detailed_description);
@@ -94,8 +96,8 @@ export default function ProductDetailPage() {
   }
 
   const handleOrderClick = () => {
-    setFormData(prev => ({ 
-      ...prev, 
+    setFormData(prev => ({
+      ...prev,
       selectedMenu: product.title,
       quantity: quantity.toString()
     }));
@@ -116,7 +118,7 @@ export default function ProductDetailPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.email || !formData.phone || !formData.eventType) {
       alert('필수 항목을 모두 입력해주세요.');
       return;
@@ -154,10 +156,11 @@ export default function ProductDetailPage() {
           eventDate: '',
           guestCount: '',
           selectedMenu: '',
-          quantity: '1',
+          quantity: MIN_ORDER_QUANTITY.toString(),
           budget: '',
           message: ''
         });
+        setQuantity(MIN_ORDER_QUANTITY);
         setTimeout(() => {
           closeModal();
         }, 2000);
@@ -177,7 +180,7 @@ export default function ProductDetailPage() {
     <>
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
         <Navbar />
-        
+
         <div className="pt-32 pb-20">
           <div className="max-w-7xl mx-auto px-6">
             {/* Breadcrumb */}
@@ -202,7 +205,7 @@ export default function ProductDetailPage() {
                       </div>
                     </div>
                     <div className="w-full h-[500px]">
-                      <img 
+                      <img
                         src={product.image_url}
                         alt={product.title}
                         title={product.title}
@@ -232,28 +235,34 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
 
+                <div className="text-base font-semibold text-gray-700">
+                  최소 주문 수량: {MIN_ORDER_QUANTITY}개
+                </div>
+
                 {/* Quantity Selector */}
                 <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100">
                   <label className="block text-gray-700 font-semibold mb-3">수량</label>
                   <div className="flex items-center gap-4">
                     <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      onClick={() => setQuantity(Math.max(MIN_ORDER_QUANTITY, quantity - 1))}
                       className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-pink-100 to-purple-100 rounded-lg hover:from-pink-200 hover:to-purple-200 transition-all cursor-pointer"
                     >
-                      <i className="ri-subtract-line text-xl text-gray-700"></i>
+                      <span className="text-2xl font-bold text-gray-800">-</span>
                     </button>
                     <input
                       type="number"
-                      min="1"
+                      min={MIN_ORDER_QUANTITY}
                       value={quantity}
-                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      onChange={(e) =>
+                        setQuantity(Math.max(MIN_ORDER_QUANTITY, parseInt(e.target.value) || MIN_ORDER_QUANTITY))
+                      }
                       className="w-20 h-12 text-center text-xl font-bold text-gray-800 bg-white border-2 border-purple-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
                     />
                     <button
                       onClick={() => setQuantity(quantity + 1)}
                       className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-pink-100 to-purple-100 rounded-lg hover:from-pink-200 hover:to-purple-200 transition-all cursor-pointer"
                     >
-                      <i className="ri-add-line text-xl text-gray-700"></i>
+                      <span className="text-2xl font-bold text-gray-800">+</span>
                     </button>
                     <div className="ml-auto text-right">
                       <div className="text-sm text-gray-600">총 금액</div>
@@ -296,7 +305,7 @@ export default function ProductDetailPage() {
 
                 {/* Ingredients */}
                 <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-purple-100">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">구성품</h2>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">구성</h2>
                   <div className="flex flex-wrap gap-3">
                     {product.ingredients.map((ingredient, index) => (
                       <span
@@ -345,7 +354,7 @@ export default function ProductDetailPage() {
                       className="group bg-white/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-purple-100 hover:border-pink-300 transition-all duration-500 shadow-lg hover:shadow-2xl cursor-pointer"
                     >
                       <div className="relative w-full h-48 overflow-hidden">
-                        <img 
+                        <img
                           src={relatedProduct.image_url}
                           alt={relatedProduct.title}
                           className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700"
@@ -360,7 +369,7 @@ export default function ProductDetailPage() {
                         </h3>
                         <div className="flex items-center justify-between">
                           <span className="text-xl font-bold text-pink-500">{relatedProduct.price}</span>
-                          <span className="text-sm text-gray-500">자세히 보기 →</span>
+                          <span className="text-sm text-gray-500">자세히 보기</span>
                         </div>
                       </div>
                     </div>
@@ -375,8 +384,14 @@ export default function ProductDetailPage() {
 
       {/* Order Modal */}
       {showOrderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={closeModal}>
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl border border-pink-200 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={closeModal}
+        >
+          <div
+            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl border border-pink-200 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={closeModal}
               className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white/80 hover:bg-white rounded-full text-gray-700 transition-colors cursor-pointer z-10"
@@ -396,7 +411,8 @@ export default function ProductDetailPage() {
                   {product.title}
                 </p>
                 <p className="text-gray-600 mt-2">
-                  수량: {quantity}개 | 총 금액: <strong className="text-pink-500">{totalPrice.toLocaleString()}원</strong>
+                  수량: {quantity}개 | 총 금액:{' '}
+                  <strong className="text-pink-500">{totalPrice.toLocaleString()}원</strong>
                 </p>
               </div>
 
@@ -470,9 +486,8 @@ export default function ProductDetailPage() {
                       <option value="기업 미팅">기업 미팅</option>
                       <option value="웨딩 피로연">웨딩 피로연</option>
                       <option value="생일 파티">생일 파티</option>
-                      <option value="세미나">세미나</option>
-                      <option value="홈파티">홈파티</option>
-                      <option value="전시회">전시회</option>
+                      <option value="개업식">개업식</option>
+                      <option value="돌잔치">돌잔치</option>
                       <option value="기타">기타</option>
                     </select>
                   </div>

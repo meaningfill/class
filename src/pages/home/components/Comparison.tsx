@@ -1,95 +1,92 @@
-
-import React from 'react';
-import { Check, X, ArrowRight, CheckCircle2 } from 'lucide-react';
-
-const Comparison: React.FC = () => {
-  const comparisons = [
-    { label: "교육의 본질", general: "레시피만 배움", tableone: "레시피 + 시스템 설계" },
-    { label: "수업 방식", general: "그룹 수업", tableone: "1:1 맞춤 설계" },
-    { label: "교육 결과", general: "이론 중심", tableone: "실전 산출물 완성" },
-    { label: "최종 산출물", general: "수료증 발급", tableone: "실제 작동하는 웹사이트" },
-  ];
-
-  const outcomes = [
-    "완성된 레시피 & 원가 시트",
-    "대량 주문 작업 매뉴얼",
-    "인쇄 가능한 디자인 파일",
-    "실제 주문받는 웹사이트"
-  ];
-
+export default function Comparison() {
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6">
-            왜 사람들은 일반 요리 학원 대신 <br/>
-            <span className="text-[#FF78C4]">테이블원</span>을 선택할까요?
+    <section className="bg-white py-20">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <p className="text-sm font-bold tracking-[0.35em] text-slate-300">WHY TABLE ONE</p>
+          <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-900 leading-tight">
+            왜 사람들은 일반 요리 학원 대신
+            <br />
+            <span className="text-pink-500">테이블원</span>을 선택할까요?
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-0 rounded-[3.5rem] overflow-hidden shadow-2xl border border-slate-100">
-          {/* General Class */}
-          <div className="bg-slate-50 p-12 md:p-16 border-r border-slate-200 opacity-60">
-            <h3 className="text-2xl font-black text-slate-400 mb-12 uppercase tracking-tighter">일반 요리 클래스</h3>
-            <ul className="space-y-10">
-              {comparisons.map((item, idx) => (
-                <li key={idx} className="flex items-center justify-between group">
-                  <span className="text-slate-400 font-bold">{item.general}</span>
-                  <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
-                    <X size={16} className="text-slate-400" />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Table One */}
-          <div className="bg-white p-12 md:p-16 relative">
-            <div className="absolute top-0 left-0 w-full h-2 bg-pink-purple-gradient"></div>
-            <h3 className="text-2xl font-black text-slate-900 mb-12 uppercase tracking-tighter flex items-center gap-2">
-              <span className="gradient-text">Table One</span>
-              <span className="text-[10px] bg-pink-50 text-[#FF78C4] px-2 py-1 rounded-md">ONLY</span>
-            </h3>
-            <ul className="space-y-10">
-              {comparisons.map((item, idx) => (
-                <li key={idx} className="flex items-center justify-between font-black text-lg">
-                  <span className="text-slate-800">{item.tableone}</span>
-                  <div className="w-8 h-8 rounded-full bg-pink-purple-gradient flex items-center justify-center shadow-lg shadow-pink-200">
-                    <Check size={18} className="text-white" />
-                  </div>
-                </li>
-              ))}
-            </ul>
+        <div className="relative rounded-[2.5rem] bg-white border border-slate-100 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.35)] overflow-hidden">
+          <div className="grid md:grid-cols-2">
+            <div className="p-10 sm:p-12 bg-slate-50/60">
+              <p className="text-sm font-semibold text-slate-400 mb-8">일반 요리 클래스</p>
+              <ul className="space-y-6 text-slate-400 text-sm font-semibold">
+                {[
+                  '레시피만 배움',
+                  '그룹 수업',
+                  '이론 중심',
+                  '수료증 발급',
+                ].map((item) => (
+                  <li key={item} className="flex items-center justify-between gap-4">
+                    <span>{item}</span>
+                    <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-300 inline-flex items-center justify-center">
+                      ×
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="p-10 sm:p-12 bg-white">
+              <div className="flex items-center gap-2 mb-8">
+                <p className="text-sm font-black text-slate-900">TABLE ONE</p>
+                <span className="px-2 py-1 text-[10px] font-bold text-pink-600 bg-pink-50 rounded-full">
+                  ONLY
+                </span>
+              </div>
+              <ul className="space-y-6 text-slate-900 text-sm font-semibold">
+                {[
+                  '레시피 + 시스템 설계',
+                  '1:1 맞춤 설계',
+                  '실전 산출물 완성',
+                  '실제 작동하는 웹사이트',
+                ].map((item) => (
+                  <li key={item} className="flex items-center justify-between gap-4">
+                    <span>{item}</span>
+                    <span className="w-7 h-7 rounded-full bg-pink-50 text-pink-500 inline-flex items-center justify-center shadow-[0_8px_20px_-10px_rgba(236,72,153,0.7)]">
+                      ✓
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
-        {/* Highlight Banner */}
-        <div className="mt-16 bg-slate-900 rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-pink-purple-gradient rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/2"></div>
-          
-          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-            <div className="max-w-md">
-              <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-xs font-black mb-6">
-                <CheckCircle2 size={14} className="text-[#FF78C4]" />
-                <span className="uppercase tracking-widest">4 Days Magic</span>
-              </div>
-              <h4 className="text-3xl md:text-4xl font-black mb-6 leading-tight">
-                단 4일 안에 <br/>
+        <div className="mt-10 rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 text-white p-10 sm:p-12 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.7)]">
+          <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 items-center">
+            <div>
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-bold uppercase tracking-widest text-slate-200">
+                4 Days Magic
+              </span>
+              <h3 className="mt-5 text-2xl sm:text-3xl font-black leading-tight">
+                단 4일 안에
+                <br />
                 완성되는 시스템 산출물
-              </h4>
-              <p className="text-slate-400 font-bold leading-relaxed">
-                테이블원은 막연한 강의를 하지 않습니다. <br/>
-                과정 종료와 동시에 매출을 낼 수 있는 '무기'를 쥐여 드립니다.
+              </h3>
+              <p className="mt-4 text-sm text-slate-300 leading-relaxed">
+                테이블원은 막연한 강의가 아닙니다. 실제로 운영 가능한 결과물을
+                <br />
+                즉시 활용할 수 있게 설계합니다.
               </p>
             </div>
-
-            <div className="grid sm:grid-cols-2 gap-4 w-full lg:w-auto">
-              {outcomes.map((text, i) => (
-                <div key={i} className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl flex items-center gap-4 group hover:bg-white/10 transition-all">
-                  <div className="w-10 h-10 rounded-2xl bg-pink-purple-gradient flex items-center justify-center shrink-0">
-                    <span className="font-black text-xs text-white">0{i+1}</span>
-                  </div>
-                  <span className="font-black text-lg text-slate-100">{text}</span>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {[
+                '완성된 레시피 & 원가 시트',
+                '대량 주문 작업 매뉴얼',
+                '인쇄 가능한 디자인 파일',
+                '실제 주문받는 웹사이트',
+              ].map((item, index) => (
+                <div
+                  key={item}
+                  className="flex items-start gap-3 rounded-2xl bg-white/5 border border-white/10 p-5"
+                >
+                  <span className="text-xs font-bold text-slate-200">{String(index + 1).padStart(2, '0')}</span>
+                  <p className="text-sm font-semibold text-white">{item}</p>
                 </div>
               ))}
             </div>
@@ -98,6 +95,4 @@ const Comparison: React.FC = () => {
       </div>
     </section>
   );
-};
-
-export default Comparison;
+}

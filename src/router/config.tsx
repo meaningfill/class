@@ -1,8 +1,7 @@
-import { lazy } from 'react';
+﻿import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
 const HomePage = lazy(() => import('../pages/home/page'));
-const ClassesPage = lazy(() => import('../pages/classes/page'));
 const ClassDetailPage = lazy(() => import('../pages/classes/detail'));
 const PortfolioPage = lazy(() => import('../pages/portfolio/page'));
 const ProductDetailPage = lazy(() => import('../pages/product/detail'));
@@ -17,6 +16,8 @@ const AdminPortfolio = lazy(() => import('../pages/admin/portfolio'));
 const AdminBlog = lazy(() => import('../pages/admin/blog'));
 const AdminProducts = lazy(() => import('../pages/admin/products'));
 const AdminProductsAI = lazy(() => import('../pages/admin/products-ai'));
+
+const AIAssistant = lazy(() => import('../AIAssistant'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 
 const routes: RouteObject[] = [
@@ -26,10 +27,6 @@ const routes: RouteObject[] = [
   },
   {
     path: '/classes',
-    element: <ClassesPage />,
-  },
-  {
-    path: '/classes/:id',
     element: <ClassDetailPage />,
   },
   {
@@ -47,6 +44,10 @@ const routes: RouteObject[] = [
   {
     path: '/blog/:id',
     element: <BlogDetailPage />,
+  },
+  {
+    path: '/ai-consultant',
+    element: <AIAssistant />,
   },
   {
     path: '/admin/login',

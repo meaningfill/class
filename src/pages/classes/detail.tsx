@@ -1,407 +1,440 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { supabase, Class, Curriculum, Schedule } from '../../lib/supabase';
+﻿import { Link } from 'react-router-dom';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
 
+const KAKAO_CHAT_URL = 'http://pf.kakao.com/_qAhfxj/chat';
+
+const problemCards = [
+  {
+    question: '"샌드위치 30개 주문이 들어왔는데\n어떻게 준비하죠?"',
+    answer: '대량 작업 타임라인이 필요합니다',
+  },
+  {
+    question: '"원가는 얼마고,\n가격은 어떻게 정해야 하나요?"',
+    answer: '정확한 원가 계산이 필요합니다',
+  },
+  {
+    question: '"스티커 디자인은 어디서 만들고,\n어떻게 인쇄하나요?"',
+    answer: '직접 만드는 방법을 배웁니다',
+  },
+  {
+    question: '"배달앱 말고\n내 사이트로 주문받을 수 있나요?"',
+    answer: '독립 주문 채널을 만듭니다',
+  },
+];
+
+const solutionDays = [
+  {
+    title: 'Day 1. 레시피 완성',
+    desc: '시그니처 메뉴 개발 & 원가 계산 시트',
+  },
+  {
+    title: 'Day 2. 대량 주문 작업',
+    desc: '20인분 작업 타임라인 & 포장 체크리스트',
+  },
+  {
+    title: 'Day 3. 디자인 & 패키징',
+    desc: '스티커/명함 디자인 파일 (실제 인쇄 가능)',
+  },
+  {
+    title: 'Day 4. 웹사이트 구축',
+    desc: '주문 페이지 + 결제 연동 (수수료 0%)',
+  },
+];
+
+const curriculumDays = [
+  {
+    title: '[Day 1] 레시피 클래스',
+    subtitle: '무엇을 팔 것인가?',
+    body: [
+      '시그니처 메뉴 1종 개발 (또는 기존 메뉴 고도화)',
+      '식재료 원가 계산 시트 작성',
+      '메뉴 라인업 구성 (베리에이션 전략)',
+      '보관 방법 & 유통기한 설정',
+      '알레르기 성분 표기',
+    ],
+    footer: '산출물: 완성된 레시피 & 원가 계산 시트',
+    mode: '수강 방식: 오프라인 출장 수업 / 온라인 1:1',
+  },
+  {
+    title: '[Day 2] 대량 주문 작업',
+    subtitle: '20인분 이상 어떻게 처리할 것인가?',
+    body: [
+      '대량 조리 타임라인 설계 (역산 계획)',
+      '식재료 발주 수량 & 타이밍',
+      '포장 준비물 체크리스트',
+      '배송 vs 픽업 프로세스 정리',
+      '실제 20인분 작업 시뮬레이션',
+      '냉장/냉동 보관 전략',
+    ],
+    footer: '산출물: 대량 주문 작업 매뉴얼',
+    mode: '수강 방식: 오프라인 출장 수업 / 온라인 1:1',
+  },
+  {
+    title: '[Day 3] 디자인 & 패키징',
+    subtitle: '어떻게 보이게 만들 것인가?',
+    body: [
+      '브랜딩 & 컬러 선정',
+      '스티커 디자인 실습 (미리캔버스)',
+      '포장 박스/용기 소싱처 공유',
+      '명함 & 리플렛 디자인',
+      '실제 인쇄 파일 제작 (AI/PDF)',
+      '온라인 발주 방법',
+    ],
+    footer: '산출물: 인쇄 가능한 디자인 파일 일체',
+    mode: '수강 방식: 온라인 줌 1:1 (전국 가능)',
+  },
+  {
+    title: '[Day 4] 웹사이트 구축',
+    subtitle: '어떻게 주문받을 것인가?',
+    body: [
+      'Framer 웹사이트 제작 (노코드)',
+      '메뉴 소개 & 가격표 페이지',
+      '주문폼 & 결제 시스템 연동 (토스페이먼츠)',
+      '카톡 알림톡 자동화 설정',
+      '모바일 최적화 체크',
+      '도메인 연결 & 런칭',
+    ],
+    footer: '산출물: 실제 주문받는 웹사이트',
+    mode: '수강 방식: 온라인 줌 1:1 (전국 가능)',
+  },
+];
+
+const regularCourseIncludes = [
+  '1:1 맞춤 설계 (총 16시간)',
+  '무제한 카톡 피드백',
+  '템플릿 & 체크리스트 전체 제공',
+  '웹사이트 도메인 1년 무료',
+];
+
+const scheduleOptions = [
+  '4일 연속 집중 완성',
+  '주 1회씩 4주 분산 수강',
+];
+
+const modularCourses = [
+  'Day 1. 레시피 클래스',
+  'Day 2. 대량 주문 작업',
+  'Day 3. 디자인 & 패키징 (온라인 전용)',
+  'Day 4. 웹사이트 구축 (온라인 전용)',
+];
+
+const processSteps = [
+  {
+    title: 'Step 1. 무료 상담 신청',
+    subtitle: '[카톡 상담] 또는 [전화 상담]',
+    items: ['목표 확인', '일정 조율', '출장 여부 확인'],
+  },
+  {
+    title: 'Step 2. 수강 신청 & 결제',
+    subtitle: '정규 과정 or 단과반 선택',
+    items: ['결제 후 상세 안내 발송'],
+  },
+  {
+    title: 'Step 3. 사전 준비',
+    subtitle: '수업 전 준비 사항 정리',
+    items: ['일정 확정', '준비물 안내', '템플릿 & 자료 공유'],
+  },
+  {
+    title: 'Step 4. 1:1 수업 진행',
+    subtitle: '실습과 피드백',
+    items: ['Day별 실습 & 피드백', '실시간 문제 해결', '산출물 완성'],
+  },
+  {
+    title: 'Step 5. 완료 & 사후 지원',
+    subtitle: '완료 후 관리',
+    items: ['시스템 최종 점검', '추가 질문 카톡 (2주)'],
+  },
+];
+
 export default function ClassDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const [classData, setClassData] = useState<Class | null>(null);
-  const [curriculum, setCurriculum] = useState<Curriculum[]>([]);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedSchedule, setSelectedSchedule] = useState<string>('');
-  const [showEnrollForm, setShowEnrollForm] = useState(false);
-
-  useEffect(() => {
-    if (id) {
-      fetchClassData();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (classData) {
-      const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
-      
-      // Course Schema
-      const courseSchema = {
-        "@context": "https://schema.org",
-        "@type": "Course",
-        "name": classData.title,
-        "description": classData.description,
-        "provider": {
-          "@type": "Organization",
-          "name": "Order Builder",
-          "url": siteUrl
-        },
-        "image": classData.image_url,
-        "offers": {
-          "@type": "Offer",
-          "price": classData.price,
-          "priceCurrency": "KRW",
-          "availability": "https://schema.org/InStock",
-          "url": `${siteUrl}/classes/${classData.id}`
-        },
-        "hasCourseInstance": schedules.map(schedule => ({
-          "@type": "CourseInstance",
-          "courseMode": "onsite",
-          "startDate": schedule.start_date,
-          "endDate": schedule.end_date,
-          "courseSchedule": {
-            "@type": "Schedule",
-            "repeatFrequency": "P1W",
-            "byDay": schedule.day_of_week
-          }
-        })),
-        "educationalLevel": classData.level === 'beginner' ? '초급' : classData.level === 'intermediate' ? '중급' : '고급',
-        "timeRequired": `P${classData.duration_weeks}W`
-      };
-
-      const script = document.createElement('script');
-      script.type = 'application/ld+json';
-      script.text = JSON.stringify(courseSchema);
-      document.head.appendChild(script);
-
-      // Update meta tags
-      document.title = `${classData.title} | Order Builder`;
-      
-      const metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription) {
-        metaDescription.setAttribute('content', classData.description);
-      }
-
-      const ogTitle = document.querySelector('meta[property="og:title"]');
-      if (ogTitle) {
-        ogTitle.setAttribute('content', classData.title);
-      }
-
-      const ogDescription = document.querySelector('meta[property="og:description"]');
-      if (ogDescription) {
-        ogDescription.setAttribute('content', classData.description);
-      }
-
-      const ogImage = document.querySelector('meta[property="og:image"]');
-      if (ogImage) {
-        ogImage.setAttribute('content', classData.image_url);
-      }
-
-      return () => {
-        document.head.removeChild(script);
-      };
-    }
-  }, [classData, schedules]);
-
-  const fetchClassData = async () => {
-    try {
-      const [classRes, curriculumRes, schedulesRes] = await Promise.all([
-        supabase.from('classes').select('*').eq('id', id).single(),
-        supabase.from('curriculum').select('*').eq('class_id', id).order('week_number'),
-        supabase.from('schedules').select('*').eq('class_id', id).order('start_date')
-      ]);
-
-      if (classRes.error) throw classRes.error;
-      setClassData(classRes.data);
-      setCurriculum(curriculumRes.data || []);
-      setSchedules(schedulesRes.data || []);
-    } catch (error) {
-      console.error('Error fetching class data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEnroll = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-
-    try {
-      const { error } = await supabase.from('enrollments').insert({
-        class_id: id,
-        schedule_id: selectedSchedule,
-        user_name: formData.get('name'),
-        user_email: formData.get('email'),
-        user_phone: formData.get('phone'),
-        status: 'pending',
-        payment_status: 'pending'
-      });
-
-      if (error) throw error;
-
-      alert('수강 신청이 완료되었습니다! 곧 연락드리겠습니다.');
-      setShowEnrollForm(false);
-    } catch (error) {
-      console.error('Error enrolling:', error);
-      alert('신청 중 오류가 발생했습니다. 다시 시도해주세요.');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!classData) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <i className="ri-error-warning-line text-6xl text-gray-300 mb-4"></i>
-          <p className="text-xl text-gray-500">클래스를 찾을 수 없습니다</p>
-          <Link to="/classes" className="mt-4 inline-block text-amber-600 hover:underline">
-            클래스 목록으로 돌아가기
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAFAFB]">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20">
-        <div className="absolute inset-0 h-96">
-          <img
-            src={classData.image_url}
-            alt={classData.title}
-            className="w-full h-full object-cover object-top"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-white"></div>
+      {/* Breadcrumb */}
+      <section className="pt-28 pb-6">
+        <div className="max-w-6xl mx-auto px-6 text-sm text-slate-400">
+          <Link to="/" className="hover:text-slate-600 transition-colors">
+            홈
+          </Link>
+          <span className="mx-2">/</span>
+          <Link to="/classes" className="hover:text-slate-600 transition-colors">
+            클래스
+          </Link>
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-40">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="px-4 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-semibold">
-                {classData.level === 'beginner' && '초급'}
-                {classData.level === 'intermediate' && '중급'}
-                {classData.level === 'advanced' && '고급'}
-              </span>
-              <span className="text-gray-500">{classData.duration_weeks}주 과정</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              {classData.title}
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              {classData.description}
-            </p>
-            <div className="flex flex-wrap items-center gap-6">
-              <div className="text-4xl font-bold text-amber-600">
-                {classData.price.toLocaleString()}원
-              </div>
-              <button
-                onClick={() => setShowEnrollForm(true)}
-                className="px-8 py-4 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors whitespace-nowrap cursor-pointer"
+      </section>
+
+      {/* Problem Detail */}
+      <section className="py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900">
+              이런 고민, 하고 계신가요?
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {problemCards.map((item) => (
+              <div
+                key={item.question}
+                className="rounded-3xl border border-slate-100 bg-white p-8 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.18)]"
               >
-                수강 신청하기
-              </button>
-            </div>
+                <p className="text-lg font-semibold text-slate-800 whitespace-pre-line">
+                  {item.question}
+                </p>
+                <p className="mt-6 text-sm font-semibold text-pink-500 flex items-center gap-2">
+                  <span className="text-lg">→</span>
+                  {item.answer}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center text-sm text-slate-500">
+            <p>창업 현장에서 마주하는 진짜 질문들.</p>
+            <p className="font-semibold text-slate-700">
+              Table One은 이 모든 과정을 4일 안에 함께 만듭니다.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-br from-pink-200/30 to-purple-200/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-purple-200/30 to-blue-200/30 rounded-full blur-3xl"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-12 text-center">
-            클래스 특징
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {classData.features && classData.features.map((feature, idx) => (
-              <div
-                key={idx}
-                className="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-purple-100"
-              >
-                <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg flex items-center justify-center mb-4">
-                  <i className="ri-check-line text-2xl text-purple-600"></i>
+      {/* Solution Detail */}
+      <section className="py-16 bg-white">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900">
+              우리는 레시피만 알려주지 않습니다
+            </h2>
+            <p className="mt-4 text-slate-500">
+              4일 후, 당신은 실제로 주문받을 수 있는 모든 시스템을 갖게 됩니다
+            </p>
+          </div>
+
+          <p className="text-lg font-bold text-slate-800 mb-6">Table One에서 만드는 것들:</p>
+          <div className="space-y-4">
+            {solutionDays.map((item) => (
+              <div key={item.title} className="flex items-center gap-4 rounded-3xl border border-slate-100 bg-white p-6">
+                <div className="w-11 h-11 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center font-bold">
+                  ✓
                 </div>
-                <p className="text-gray-800 font-medium">{feature}</p>
+                <div>
+                  <p className="font-bold text-slate-900">{item.title}</p>
+                  <p className="text-sm text-slate-500 mt-1">→ {item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 rounded-3xl border border-pink-300 bg-pink-100/70 px-8 py-6 text-center text-base text-slate-700">
+            <p>모든 과정을 1:1로 진행하기 때문에</p>
+            <p>4일 연속 집중 완성도 가능하고,</p>
+            <p>주 1회씩 4주로 나눠서 들을 수도 있습니다.</p>
+            <p className="mt-2 font-semibold text-slate-800">당신의 일정에 맞춰 조정 가능합니다.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Curriculum Detail */}
+      <section className="py-16">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900">4일 완성 커리큘럼</h2>
+            <p className="mt-4 text-slate-500">단체 주문 시스템을 완성하는 4단계</p>
+            <p className="text-slate-400 text-sm">각 단계마다 실전 산출물이 나옵니다</p>
+          </div>
+
+          <div className="space-y-4">
+            {curriculumDays.map((item, idx) => (
+              <details
+                key={item.title}
+                open={idx === 0}
+                className="group rounded-3xl border border-pink-100 bg-white px-6 py-5 shadow-sm"
+              >
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center font-bold">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900">{item.title}</p>
+                      <p className="text-sm text-slate-500">{item.subtitle}</p>
+                    </div>
+                  </div>
+                  <span className="text-slate-400 transition-transform duration-200 group-open:rotate-180">▾</span>
+                </summary>
+                <div className="mt-6 text-sm text-slate-600 space-y-2">
+                  <p className="font-semibold text-slate-800">세부 내용:</p>
+                  {item.body.map((line) => (
+                    <p key={line} className="flex items-start gap-2">
+                      <span className="text-pink-400">•</span>
+                      <span>{line}</span>
+                    </p>
+                  ))}
+                  <div className="mt-4 rounded-2xl border border-pink-100 bg-pink-50/50 p-4">
+                    <p className="font-semibold text-slate-800">✅ {item.footer}</p>
+                    <p className="mt-2">📌 {item.mode}</p>
+                  </div>
+                </div>
+              </details>
+            ))}
+          </div>
+
+          <div className="mt-10 rounded-2xl bg-slate-900 text-white px-6 py-5 text-center text-sm">
+            <p className="font-semibold">정규 과정 (4일 통합)</p>
+            <p className="text-slate-300">4일 연속 or 주 1회씩 4주 선택 가능</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section (No price) */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900">수강 안내</h2>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8">
+            <div className="flex flex-col rounded-3xl border border-pink-300 bg-pink-50/40 p-8 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.18)] transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_30px_70px_-40px_rgba(236,72,153,0.35)]">
+              <div className="flex items-center gap-2 text-pink-500 text-xs font-semibold bg-pink-100 px-3 py-1 rounded-full w-fit">
+                추천
+              </div>
+              <h3 className="mt-4 text-xl font-bold text-slate-900">정규 과정 (4일 완성)</h3>
+              <p className="mt-2 text-slate-500">레시피부터 웹사이트까지 ALL-IN-ONE</p>
+
+              <div className="mt-6 space-y-6 flex-1">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">🎁 포함 사항:</p>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                    {regularCourseIncludes.map((item) => (
+                      <li key={item} className="flex items-start gap-2">
+                        <span className="text-pink-400">✓</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">📅 일정 선택:</p>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                    {scheduleOptions.map((item) => (
+                      <li key={item} className="flex items-start gap-2">
+                        <span className="text-pink-400">✓</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <a
+                href={KAKAO_CHAT_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-8 inline-flex items-center justify-center rounded-full bg-pink-400 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-pink-500"
+              >
+                정규 과정 신청하기
+              </a>
+            </div>
+
+            <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.16)] transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_30px_70px_-40px_rgba(15,23,42,0.25)]">
+              <h3 className="text-xl font-bold text-slate-900">단과반 (모듈별 선택)</h3>
+              <p className="mt-2 text-slate-500">필요한 부분만 골라 듣기</p>
+
+              <ul className="mt-6 space-y-3 text-sm text-slate-700 flex-1">
+                {modularCourses.map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="text-pink-400">📌</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href={KAKAO_CHAT_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-8 inline-flex items-center justify-center rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-pink-300 hover:text-pink-500"
+              >
+                단과반 선택하기
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-10 rounded-3xl border border-slate-100 bg-slate-50 px-8 py-6 text-sm text-slate-600">
+            <p className="font-semibold text-slate-800">📍 출장 수업 안내</p>
+            <ul className="mt-3 space-y-1">
+              <li>• 대상: Day 1, 2 (레시피 & 대량 작업)</li>
+              <li>• 조건: 지역별 출장비 별도, 사전 상담 필수</li>
+              <li>
+                • 문의: <a className="text-pink-500 hover:text-pink-600" href={KAKAO_CHAT_URL} target="_blank" rel="noreferrer">카톡 상담</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <section className="py-16">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900">수강 신청부터 완성까지</h2>
+          </div>
+
+          <div className="space-y-6">
+            {processSteps.map((step, idx) => (
+              <div key={step.title} className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_18px_50px_-40px_rgba(15,23,42,0.18)]">
+                <div className="flex items-start gap-4">
+                  <div className="w-11 h-11 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center font-bold">
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900">{step.title}</p>
+                    <p className="text-sm text-slate-500 mt-1">{step.subtitle}</p>
+                    <ul className="mt-3 space-y-1 text-sm text-slate-600">
+                      {step.items.map((item) => (
+                        <li key={item} className="flex items-start gap-2">
+                          <span className="text-pink-400">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Curriculum Section */}
-      {curriculum.length > 0 && (
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-12 text-center">
-              커리큘럼
-            </h2>
-            <div className="space-y-4">
-              {curriculum.map((week) => (
-                <div
-                  key={week.id}
-                  className="bg-white border border-purple-100 rounded-xl p-6 hover:shadow-lg transition-shadow"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-400 rounded-lg flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">{week.week_number}주</span>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">
-                        {week.title}
-                      </h3>
-                      <p className="text-gray-600 mb-4">{week.description}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {week.topics.map((topic, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 bg-gradient-to-r from-pink-50 to-purple-50 text-purple-700 rounded-full text-sm border border-purple-100"
-                          >
-                            {topic}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* CTA Section */}
+      <section className="py-16 bg-slate-900 text-white">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl font-black">지금 시작하세요</h2>
+          <p className="mt-4 text-slate-300">4일이면 충분합니다.</p>
+          <p className="text-slate-400 mt-2">
+            레시피, 작업 매뉴얼, 디자인, 웹사이트까지
+            <br />
+            실제로 주문받을 수 있는 모든 시스템을 완성하세요.
+          </p>
 
-      {/* Schedule Section */}
-      {schedules.length > 0 && (
-        <section className="py-20 bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
-          <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-pink-200/30 to-purple-200/30 rounded-full blur-3xl"></div>
-          
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-12 text-center">
-              개강 일정
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {schedules.map((schedule) => (
-                <div
-                  key={schedule.id}
-                  className="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-purple-100"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg flex items-center justify-center">
-                      <i className="ri-calendar-line text-purple-600"></i>
-                    </div>
-                    <span className="font-semibold text-gray-800">{schedule.day_of_week}</span>
-                  </div>
-                  <div className="space-y-2 text-gray-600">
-                    <p>
-                      <strong>시작:</strong> {new Date(schedule.start_date).toLocaleDateString('ko-KR')}
-                    </p>
-                    <p>
-                      <strong>종료:</strong> {new Date(schedule.end_date).toLocaleDateString('ko-KR')}
-                    </p>
-                    <p>
-                      <strong>시간:</strong> {schedule.time}
-                    </p>
-                    <p>
-                      <strong>남은 자리:</strong> {schedule.available_slots}명
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+          <a
+            href={KAKAO_CHAT_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-pink-400 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-pink-500"
+          >
+            문의하기
+          </a>
 
-      {/* Enrollment Form Modal */}
-      {showEnrollForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">수강 신청</h3>
-              <button
-                onClick={() => setShowEnrollForm(false)}
-                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 cursor-pointer"
-              >
-                <i className="ri-close-line text-2xl"></i>
-              </button>
-            </div>
-
-            <form onSubmit={handleEnroll} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  일정 선택 *
-                </label>
-                <select
-                  value={selectedSchedule}
-                  onChange={(e) => setSelectedSchedule(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                >
-                  <option value="">일정을 선택하세요</option>
-                  {schedules.map((schedule) => (
-                    <option key={schedule.id} value={schedule.id}>
-                      {schedule.day_of_week} - {schedule.time} (시작: {new Date(schedule.start_date).toLocaleDateString('ko-KR')})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  이름 *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  placeholder="홍길동"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  이메일 *
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  placeholder="example@email.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  연락처 *
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  placeholder="010-1234-5678"
-                />
-              </div>
-
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowEnrollForm(false)}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-6 py-3 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  신청하기
-                </button>
-              </div>
-            </form>
+          <div className="mt-8 text-xs text-slate-500">
+            <p>※ 환불 정책: 첫 세션 종료 전까지 100% 환불 가능</p>
+            <p>※ 문의: 카톡 문의</p>
           </div>
         </div>
-      )}
+      </section>
 
       <Footer />
     </div>

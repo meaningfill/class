@@ -13,6 +13,10 @@ export default function BlogPage() {
   }, []);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
     
     // Blog Schema

@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function HeroSection() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [count, setCount] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -54,11 +56,11 @@ export default function HeroSection() {
       {/* Floating Cloud Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Large Cloud - Top Right */}
-        <div 
+        <div
           className="absolute top-20 right-10 w-96 h-64 opacity-40"
           style={{
             transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px)`,
-            transition: 'transform 0.3s ease-out'
+            transition: 'transform 0.3s ease-out',
           }}
         >
           <div className="relative w-full h-full">
@@ -70,11 +72,11 @@ export default function HeroSection() {
         </div>
 
         {/* Medium Cloud - Left */}
-        <div 
+        <div
           className="absolute top-1/3 left-10 w-72 h-48 opacity-30"
           style={{
             transform: `translate(${mousePosition.x * -20}px, ${mousePosition.y * 20}px)`,
-            transition: 'transform 0.3s ease-out'
+            transition: 'transform 0.3s ease-out',
           }}
         >
           <div className="relative w-full h-full">
@@ -85,12 +87,12 @@ export default function HeroSection() {
         </div>
 
         {/* Heart Elements */}
-        <div 
+        <div
           className="absolute top-32 right-1/4 text-6xl opacity-60"
           style={{
             transform: `translate(${mousePosition.x * 40}px, ${mousePosition.y * -30}px) rotate(15deg)`,
             transition: 'transform 0.3s ease-out',
-            filter: 'drop-shadow(0 10px 20px rgba(255, 182, 193, 0.3))'
+            filter: 'drop-shadow(0 10px 20px rgba(255, 182, 193, 0.3))',
           }}
         >
           <div className="w-16 h-16 bg-gradient-to-br from-pink-300 to-pink-200 rounded-full blur-sm"></div>
@@ -127,32 +129,40 @@ export default function HeroSection() {
                   transform: `translateZ(${mousePosition.y * 50}px)`,
                 }}
               >
-                <span className="block mb-2 break-words">
+                <span className="block mb-2 break-words text-xl sm:text-2xl md:text-3xl lg:text-4xl">
                   단순한 레시피가 아니라
                 </span>
-                <span className="block bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 bg-clip-text text-transparent font-bold">
+                <span className="block bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 bg-clip-text text-transparent font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
                   "단체 주문 시스템"
                 </span>
-                <span className="block mt-2">
+                <span className="block mt-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl">
                   을 배웁니다
                 </span>
               </h1>
 
               {/* Description */}
               <p
-                className="text-base md:text-lg text-gray-600 mb-6 leading-relaxed font-normal max-w-prose"
+                className="text-base md:text-lg text-gray-600 mb-10 leading-relaxed font-normal max-w-prose"
                 style={{
                   transform: `translateY(${mousePosition.y * 5}px)`,
                 }}
               >
-                단품 판매의 한계를 넘어 대량 주문을 안정적으로 소화하고 싶으신가요?<br />
-                <strong className="text-gray-800">시간이 지나도 일정한 맛, 효율적인 대량 조리 공정, 신뢰감을 주는 패키징,</strong><br />
-                그리고 수수료 없는 나만의 예약 채널 구축까지 실무의 전 과정을 1:1로 함께 설계합니다.
+                단품 판매의 한계를 넘어 대량 주문을 안정적으로 소화하고 싶으신가요?
+                <br />
+                <span className="inline-block mt-4">
+                  <strong className="text-gray-800 font-bold">
+                    시간이 지나도 일정한 맛, 효율적인 대량 조리 공정, 신뢰감을 주는 패키징,
+                  </strong>
+                </span>
+                <br />
+                그리고{' '}
+                <strong className="text-gray-800 font-bold">수수료 없는 나만의 예약 채널 구축</strong>까지
+                실무의 전 과정을 <strong className="text-gray-800 font-bold">1:1</strong>로 함께 설계합니다.
               </p>
 
               {/* Action Buttons */}
               <div
-                className="flex flex-col sm:flex-row items-start gap-4 mb-12"
+                className="flex flex-col sm:flex-row items-start gap-4 mb-16"
                 style={{
                   transform: `translateY(${mousePosition.y * -5}px)`,
                 }}
@@ -168,10 +178,7 @@ export default function HeroSection() {
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </button>
                 <button
-                  onClick={() => {
-                    const element = document.getElementById('intro');
-                    if (element) element.scrollIntoView({ behavior: 'smooth' });
-                  }}
+                  onClick={() => navigate('/classes')}
                   className="group w-full sm:w-auto px-10 py-4 bg-white/80 backdrop-blur-xl text-gray-700 text-lg font-bold rounded-full transition-all duration-300 border-2 border-purple-200 hover:border-pink-300 hover:bg-white whitespace-nowrap cursor-pointer"
                 >
                   <span className="flex items-center justify-center gap-3">
@@ -190,13 +197,9 @@ export default function HeroSection() {
                   <div className="text-7xl md:text-8xl font-black bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
                     {count}
                   </div>
-                  <div className="text-3xl md:text-4xl font-black text-gray-800 mt-2">
-                    인분+
-                  </div>
+                  <div className="text-3xl md:text-4xl font-black text-gray-800 mt-2">인분+</div>
                 </div>
-                <div className="text-lg text-gray-600 font-medium">
-                  혼자서도 가능한 효율적 대량 공정
-                </div>
+                <div className="text-lg text-gray-600 font-medium">자사몰까지 구축하는 실전 시스템</div>
               </div>
 
               {/* Small Stats Grid */}
@@ -217,10 +220,10 @@ export default function HeroSection() {
                 </div>
                 <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100 text-center shadow-lg">
                   <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-purple-400 to-purple-300 rounded-xl flex items-center justify-center">
-                    <i className="ri-computer-line text-2xl text-white"></i>
+                    <i className="ri-brush-2-line text-2xl text-white"></i>
                   </div>
-                  <div className="text-2xl font-black text-purple-500 mb-1">웹</div>
-                  <div className="text-sm text-gray-600 font-medium">사이트 만들기</div>
+                  <div className="text-2xl font-black text-purple-500 mb-1">포장디자인</div>
+                  <div className="text-sm text-gray-600 font-medium">브랜딩까지</div>
                 </div>
               </div>
             </div>
