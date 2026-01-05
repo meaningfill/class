@@ -1,0 +1,81 @@
+# 🗺️ Project Master Map: Table One (Order Builder)
+
+> "우리는 요리를 가르치지 않습니다. 돈이 벌리는 시스템을 설계합니다."
+
+이 문서는 **Table One(Order Builder)** 프로젝트의 설계 도면입니다. AI 모델이 교체되어도 이 문서를 입력하면 프로젝트의 맥락을 완벽히 복구할 수 있습니다.
+
+---
+
+## 1. 🎯 비즈니스 비전 (Business Vision)
+- **브랜드명**: Table One (서비스명: Order Builder)
+- **핵심 가치**: 1인 창업자가 대량 주문을 처리할 수 있는 **'산업적 시스템'** 제공.
+- **설득 전략**: 간다 마사노리의 **PASONA 법칙** 적용.
+  - **Problem**: 1인 장사의 한계, 플랫폼 수수료의 늪.
+  - **Agitation**: 몸은 상하고 통장은 비어가는 현실 부각.
+  - **Solution**: 자동화된 주문 인프라와 고단가 메뉴 전략.
+  - **Narrow down**: 소수 정예 마스터 클래스.
+  - **Action**: 상담 예약 신청서 제출.
+
+---
+
+## 2. 🛠️ 기술 스택 (Tech Stack)
+- **Frontend**: React 19 (ESM), Vite, TypeScript.
+- **Styling**: Tailwind CSS (Pretendard 폰트 기반).
+- **Backend/DB**: Supabase (Auth, Database, Storage).
+- **AI Engine**: Google Gemini API (`gemini-3-flash-preview`).
+- **Icons**: Lucide React.
+- **Deployment**: Vercel-ready.
+
+---
+
+## 3. 📂 실제 디렉토리 및 파일 구조 (Directory Map)
+
+### 📍 Root (Entry Points)
+- `index.html`: 앱의 메인 엔트리 및 메타 태그 설정.
+- `index.tsx`: React Root 렌더링.
+- `App.tsx`: 전역 레이아웃 및 카카오톡 플로팅 버튼 관리.
+- `router.tsx`: `HashRouter` 기반 페이지 라우팅.
+- `i18n.ts`: 다국어 처리(한국어 우선) 설정.
+
+### 🍱 `/components` (Business Sections)
+- **Landing Sections**: `Hero.tsx`, `Comparison.tsx`, `WhyUs.tsx`, `Stats.tsx`, `Curriculum.tsx`, `Portfolio.tsx`, `Blog.tsx`, `Contact.tsx`.
+- **Feature Widgets**: `AIConsultant.tsx` (AI 상담), `Header.tsx`, `Footer.tsx`.
+- **System Pages**: `ClassPage.tsx` (상세 페이지), `AdminDashboard.tsx` (CMS 관리자).
+
+### 📑 `/pages` (Layout Composers)
+- `Home.tsx`: 모든 랜딩 섹션을 결합하는 메인 페이지.
+
+### ⚙️ `/lib` (Core Logic)
+- `supabase.ts`: DB 연동 로직 및 Mock 데이터(안전장치) 포함.
+
+### 📚 `/docs` (Business Design Strategy)
+- `01-planning-copywriting.md`: PASONA 법칙 기반 카피라이팅 가이드.
+- `02-wireframing.md`: 정보 계층 구조 설계.
+- `03-component-development.md`: 디자인 토큰 및 컴포넌트 규칙.
+- `04-section-development.md`: 섹션 통합 개발 지침.
+- `05-refinement-motion.md`: 인터랙션 및 마감 규칙.
+- `06-deployment-guide.md`: 풀스택 배포 전략.
+- `07-membership-dashboard.md`: 수익화 모델 및 대시보드 설계.
+
+---
+
+## 4. 🎨 디자인 시스템 (Design Tokens)
+- **Main Gradient**: `linear-gradient(135deg, #ff78c4 0%, #9333ea 100%)`
+- **Primary Color**: Pink (#FF78C4), Purple (#9333ea).
+- **Typography**: Pretendard (100~900 weight).
+- **Shadow**: `shadow-soft` (부드러운 분홍색 계열 그림자).
+
+---
+
+## 5. ⚙️ 핵심 로직 및 보안 가이드 (Security & Logic)
+- **API Key**: `process.env.API_KEY` 사용 (절대 하드코딩 금지).
+- **멤버십 로직**: `isPaidMember` 상태에 따른 `blur-md` 처리 및 프리미엄 콘텐츠 보호.
+- **데이터 복원**: Supabase 연결 오류 시 `MOCK_DATA`로 자동 폴백.
+
+---
+
+## 6. 🚀 향후 로드맵 (Current Status: Step 07)
+- [x] 기본 UI 및 설득 구조 완성.
+- [x] Supabase 인프라 구축 및 Mock 데이터 연동.
+- [x] 유료 멤버십 UI 및 관리자 CMS 대시보드 기초.
+- [ ] **Next Action**: 실제 결제 연동 및 Supabase Auth 실구현.
