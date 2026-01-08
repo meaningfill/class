@@ -35,7 +35,7 @@ export default function BlogDetailPage() {
         },
         "publisher": {
           "@type": "Organization",
-          "name": "케이터링 아카데미",
+          "name": "Order Builder",
           "url": siteUrl,
           "logo": {
             "@type": "ImageObject",
@@ -54,7 +54,7 @@ export default function BlogDetailPage() {
       document.head.appendChild(script);
 
       // Update meta tags
-      document.title = `${post.title} | 케이터링 아카데미`;
+      document.title = `${post.title} | Order Builder`;
       
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {

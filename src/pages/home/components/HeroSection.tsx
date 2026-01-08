@@ -6,6 +6,7 @@ export default function HeroSection() {
   const [count, setCount] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const kakaoChannelUrl = import.meta.env.VITE_KAKAO_CHANNEL_URL as string | undefined;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -45,6 +46,14 @@ export default function HeroSection() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleEducationConsult = () => {
+    if (kakaoChannelUrl) {
+      window.open(kakaoChannelUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    scrollToInquiry();
   };
 
   return (
@@ -168,7 +177,7 @@ export default function HeroSection() {
                 }}
               >
                 <button
-                  onClick={scrollToInquiry}
+                  onClick={handleEducationConsult}
                   className="group relative w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-300 shadow-lg shadow-pink-300/50 hover:shadow-pink-400/60 hover:scale-105 whitespace-nowrap cursor-pointer"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-3">

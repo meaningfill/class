@@ -93,7 +93,7 @@ export function ProblemDetailSection() {
               color: 'var(--text-primary)'
             }}
           >
-            <strong>Table One은 이 모든 과정을 4일 안에 함께 만듭니다.</strong>
+            <strong>Order Builder는 이 모든 과정을 4일 안에 함께 만듭니다.</strong>
           </p>
         </div>
       </div>

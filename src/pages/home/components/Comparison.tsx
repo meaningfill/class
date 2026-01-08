@@ -3,7 +3,7 @@ export default function Comparison() {
     <section className="bg-white py-20">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-sm font-bold tracking-[0.35em] text-slate-300">WHY TABLE ONE</p>
+          <p className="text-sm font-bold tracking-[0.35em] text-slate-300">WHY ORDER BUILDER</p>
           <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-900 leading-tight">
             왜 사람들은 일반 요리 학원 대신
             <br />
@@ -33,7 +33,7 @@ export default function Comparison() {
             </div>
             <div className="p-10 sm:p-12 bg-white">
               <div className="flex items-center gap-2 mb-8">
-                <p className="text-sm font-black text-slate-900">TABLE ONE</p>
+                <p className="text-sm font-black text-slate-900">ORDER BUILDER</p>
                 <span className="px-2 py-1 text-[10px] font-bold text-pink-600 bg-pink-50 rounded-full">
                   ONLY
                 </span>

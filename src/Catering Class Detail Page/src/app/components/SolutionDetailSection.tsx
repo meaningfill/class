@@ -61,7 +61,7 @@ export function SolutionDetailSection() {
               color: 'var(--text-primary)'
             }}
           >
-            Table One에서 만드는 것들:
+            Order Builder에서 만드는 것들:
           </h3>
 
           <div className="space-y-6 mb-12">

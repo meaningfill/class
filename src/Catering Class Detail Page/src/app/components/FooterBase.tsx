@@ -16,7 +16,7 @@ export function FooterBase() {
                 color: 'var(--text-inverse)'
               }}
             >
-              Table One
+              Order Builder
             </h3>
             <p 
               style={{ 
@@ -246,7 +246,7 @@ export function FooterBase() {
               color: 'var(--text-muted)'
             }}
           >
-            © 2026 Table One. All rights reserved.
+            © 2026 Order Builder. All rights reserved.
           </p>
         </div>
       </div>

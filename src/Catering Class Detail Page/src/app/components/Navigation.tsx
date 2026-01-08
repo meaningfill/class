@@ -15,7 +15,7 @@ export function Navigation() {
           className="text-[var(--text-primary)]"
           style={{ fontFamily: 'Fraunces, serif' }}
         >
-          Table One
+          Order Builder
         </div>
 
         {/* Desktop Menu */}
