@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { geminiService } from './geminiService';
-import Navbar from './pages/home/components/Navbar';
+import { geminiService } from './services/geminiService';
+import Navbar from './pages/public/home/components/Navbar';
 
 type ChatMessage = {
   role: 'user' | 'model';
@@ -68,17 +68,17 @@ const AIAssistant: React.FC = () => {
             <div className="w-20 h-20 bg-white rounded-3xl shadow-sm flex items-center justify-center text-3xl text-amber-500 mb-8 border border-amber-100">
               <i className="fa-solid fa-chart-pie"></i>
             </div>
-            <h3 className="text-2xl font-black text-gray-800 mb-4">원가 설계, 이제 과학입니다.</h3>
+            <h3 className="text-2xl font-black text-gray-800 mb-4">?��? ?�계, ?�제 과학?�니??</h3>
             <p className="text-gray-500 max-w-sm mb-10 text-sm font-medium leading-relaxed">
-              FOODLOGIC의 4대 원칙으로 당신의 레시피를 <br/>
-              지속 가능한 비즈니스 모델로 분석해 드립니다.
+              FOODLOGIC??4?� ?�칙?�로 ?�신???�시?��? <br/>
+              지??가?�한 비즈?�스 모델�?분석???�립?�다.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
               {[
-                "샌드위치 100인분 실질 원가 계산",
-                "인건비를 줄이는 주방 동선 설계",
-                "패키징 비용의 적정 비중은?",
-                "슬랙 멤버십 전용 자료 안내"
+                "?�드?�치 100?�분 ?�질 ?��? 계산",
+                "?�건비�? 줄이??주방 ?�선 ?�계",
+                "?�키�?비용???�정 비중?�?",
+                "?�랙 멤버???�용 ?�료 ?�내"
               ].map((text, i) => (
                 <button 
                   key={i} 
@@ -133,7 +133,7 @@ const AIAssistant: React.FC = () => {
           <input
             type="text"
             className="flex-1 bg-transparent border-none focus:outline-none px-4 py-2 font-medium text-gray-800 text-sm"
-            placeholder="비즈니스 모델에 대해 질문하세요..."
+            placeholder="비즈?�스 모델???�??질문?�세??.."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
@@ -148,7 +148,7 @@ const AIAssistant: React.FC = () => {
         </div>
         <p className="mt-3 text-[10px] text-gray-400 text-center font-medium">
           <i className="fa-solid fa-shield-halved mr-1"></i>
-          분석 데이터는 암호화되어 보호되며, FOODLOGIC 전문가가 함께 모니터링합니다.
+          분석 ?�이?�는 ?�호?�되??보호?�며, FOODLOGIC ?�문가가 ?�께 모니?�링?�니??
         </p>
       </div>
           </div>

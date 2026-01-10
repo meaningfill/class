@@ -1,5 +1,55 @@
+﻿import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../../../services/supabase';
+
+interface ContactItem {
+  icon: string;
+  text: string;
+  gradient: string;
+}
+
+const defaultContactInfo: ContactItem[] = [
+  { icon: 'ri-mail-line', text: 'contact@catering.com', gradient: 'from-pink-400 to-purple-400' },
+  { icon: 'ri-phone-line', text: '010-1234-5678', gradient: 'from-purple-400 to-pink-500' },
+  { icon: 'ri-map-pin-line', text: '서울시 강남구', gradient: 'from-pink-500 to-purple-500' }
+];
 
 export default function Footer() {
+  const navigate = useNavigate();
+  const [contactInfo, setContactInfo] = useState<ContactItem[]>(defaultContactInfo);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadContactInfo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('contact_email, contact_phone, contact_address')
+          .eq('id', 1)
+          .maybeSingle();
+
+        if (error || !data || !isMounted) {
+          return;
+        }
+
+        setContactInfo([
+          { icon: 'ri-mail-line', text: data.contact_email || defaultContactInfo[0].text, gradient: 'from-pink-400 to-purple-400' },
+          { icon: 'ri-phone-line', text: data.contact_phone || defaultContactInfo[1].text, gradient: 'from-purple-400 to-pink-500' },
+          { icon: 'ri-map-pin-line', text: data.contact_address || defaultContactInfo[2].text, gradient: 'from-pink-500 to-purple-500' }
+        ]);
+      } catch (error) {
+        console.error('Failed to load contact info:', error);
+      }
+    };
+
+    loadContactInfo();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -9,22 +59,20 @@ export default function Footer() {
 
   const quickLinks = [
     { label: '소개', id: 'intro', icon: 'ri-information-line' },
-    { label: '커리큘럼', id: 'curriculum', icon: 'ri-book-open-line' },
+    { label: '커리큘럼', path: '/classes', icon: 'ri-book-open-line' },
     { label: '포트폴리오', id: 'portfolio', icon: 'ri-gallery-line' }
   ];
 
-  const contactInfo = [
-    { icon: 'ri-mail-line', text: 'contact@catering.com', gradient: 'from-pink-400 to-purple-400' },
-    { icon: 'ri-phone-line', text: '010-1234-5678', gradient: 'from-purple-400 to-pink-500' },
-    { icon: 'ri-map-pin-line', text: '서울시 강남구', gradient: 'from-pink-500 to-purple-500' }
-  ];
+  const handleQuickLink = (link: { id?: string; path?: string }) => {
+    if (link.path) {
+      navigate(link.path);
+      return;
+    }
 
-  const socialLinks = [
-    { icon: 'ri-instagram-line', url: '#', gradient: 'from-pink-400 to-purple-400' },
-    { icon: 'ri-facebook-circle-line', url: '#', gradient: 'from-purple-400 to-pink-500' },
-    { icon: 'ri-youtube-line', url: '#', gradient: 'from-pink-500 to-purple-500' },
-    { icon: 'ri-kakao-talk-line', url: '#', gradient: 'from-purple-500 to-pink-400' }
-  ];
+    if (link.id) {
+      scrollToSection(link.id);
+    }
+  };
 
   return (
     <footer className="relative bg-gradient-to-br from-white via-pink-50 to-purple-50 overflow-hidden">
@@ -41,23 +89,9 @@ export default function Footer() {
                 Order Builder
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                주문이 들어오는 구조부터<br />
-                실전 창업까지 함께합니다
+                주문을 시작하는 구조를 만듭니다.<br />
+                실전 창업까지 함께합니다.
               </p>
-            </div>
-            
-            {/* Social Links */}
-            <div className="flex gap-3">
-              {socialLinks.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.url}
-                  className="group relative w-12 h-12 flex items-center justify-center bg-white rounded-xl border border-purple-100 hover:border-pink-300 transition-all duration-300 hover:scale-110 cursor-pointer overflow-hidden shadow-sm"
-                >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${social.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
-                  <i className={`${social.icon} text-xl text-gray-600 group-hover:text-white transition-colors relative z-10`}></i>
-                </a>
-              ))}
             </div>
           </div>
 
@@ -71,7 +105,7 @@ export default function Footer() {
               {quickLinks.map((link, index) => (
                 <li key={index}>
                   <button
-                    onClick={() => scrollToSection(link.id)}
+                    onClick={() => handleQuickLink(link)}
                     className="group flex items-center gap-3 text-gray-600 hover:text-pink-500 transition-colors cursor-pointer"
                   >
                     <i className={`${link.icon} text-pink-500 group-hover:scale-110 transition-transform`}></i>
@@ -91,7 +125,9 @@ export default function Footer() {
             <ul className="space-y-4">
               {contactInfo.map((contact, index) => (
                 <li key={index} className="group flex items-start gap-3">
-                  <div className={`w-10 h-10 flex items-center justify-center bg-gradient-to-br ${contact.gradient} rounded-lg flex-shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-md`}>
+                  <div
+                    className={`w-10 h-10 flex items-center justify-center bg-gradient-to-br ${contact.gradient} rounded-lg flex-shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-md`}
+                  >
                     <i className={`${contact.icon} text-white`}></i>
                   </div>
                   <span className="text-sm text-gray-600 pt-2 group-hover:text-gray-800 transition-colors">
@@ -110,7 +146,7 @@ export default function Footer() {
             </h4>
             <p className="text-gray-600 text-sm mb-4 leading-relaxed">
               최신 소식과 특별 혜택을<br />
-              가장 먼저 받아보세요
+              이메일로 받아보세요.
             </p>
             <div className="relative">
               <input
@@ -128,9 +164,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-purple-100">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-sm">
-              © 2024 Order Builder. All rights reserved.
-            </p>
+            <p className="text-gray-500 text-sm">© 2024 Order Builder. All rights reserved.</p>
             <div className="flex items-center gap-6">
               <a href="#" className="text-gray-500 hover:text-pink-500 text-sm transition-colors cursor-pointer">
                 이용약관
@@ -138,20 +172,12 @@ export default function Footer() {
               <a href="#" className="text-gray-500 hover:text-pink-500 text-sm transition-colors cursor-pointer">
                 개인정보처리방침
               </a>
-              <a 
+              <a
                 href="/admin/login"
                 className="text-gray-500 hover:text-pink-500 text-sm transition-colors cursor-pointer flex items-center gap-1"
               >
                 <i className="ri-admin-line text-xs"></i>
                 관리자
-              </a>
-              <a 
-                href="https://readdy.ai/?ref=logo" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-pink-500 text-sm transition-colors cursor-pointer"
-              >
-                Powered by Readdy
               </a>
             </div>
           </div>

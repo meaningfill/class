@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase, BlogPost } from '../../lib/supabase';
+import { supabase, BlogPost } from '../../../services/supabase';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
 
@@ -18,19 +18,18 @@ export default function BlogPage() {
 
   useEffect(() => {
     const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
-    
-    // Blog Schema
+
     const blogSchema = {
-      "@context": "https://schema.org",
-      "@type": "Blog",
-      "name": "Order Builder 블로그",
-      "description": "케이터링 창업과 비즈니스에 관한 유용한 정보와 팁을 공유합니다",
-      "url": `${siteUrl}/blog`,
-      "publisher": {
-        "@type": "Organization",
-        "name": "Order Builder",
-        "url": siteUrl
-      }
+      '@context': 'https://schema.org',
+      '@type': 'Blog',
+      name: 'Order Builder 블로그',
+      description: '케이터링 창업과 비즈니스 운영에 도움이 되는 정보를 공유합니다.',
+      url: `${siteUrl}/blog`,
+      publisher: {
+        '@type': 'Organization',
+        name: 'Order Builder',
+        url: siteUrl,
+      },
     };
 
     const script = document.createElement('script');
@@ -38,12 +37,14 @@ export default function BlogPage() {
     script.text = JSON.stringify(blogSchema);
     document.head.appendChild(script);
 
-    // Update meta tags
     document.title = '블로그 | Order Builder';
-    
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', '케이터링 창업과 비즈니스에 관한 유용한 정보와 팁을 공유합니다. Order Builder의 전문가들이 작성한 블로그 포스트를 확인하세요.');
+      metaDescription.setAttribute(
+        'content',
+        '케이터링 창업과 비즈니스 운영에 도움이 되는 정보를 공유합니다. Order Builder 전문가의 블로그를 확인하세요.'
+      );
     }
 
     const ogTitle = document.querySelector('meta[property="og:title"]');
@@ -76,20 +77,18 @@ export default function BlogPage() {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       <Navbar />
 
-      {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100">
         <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-br from-pink-200/40 to-purple-200/40 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-purple-200/40 to-blue-200/40 rounded-full blur-3xl"></div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl font-bold text-gray-800 mb-6">블로그</h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            케이터링과 요리에 관한 유용한 정보와 팁을 공유합니다
+            케이터링과 요리에 관한 실용적인 정보를 공유합니다.
           </p>
         </div>
       </section>
 
-      {/* Blog Posts */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
@@ -117,7 +116,7 @@ export default function BlogPage() {
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                       <span className="flex items-center gap-2">
                         <i className="ri-user-line"></i>
-                        {post.author}
+                        Master
                       </span>
                       <span className="flex items-center gap-2">
                         <i className="ri-calendar-line"></i>
@@ -143,7 +142,7 @@ export default function BlogPage() {
           {!loading && posts.length === 0 && (
             <div className="text-center py-20">
               <i className="ri-article-line text-6xl text-purple-200 mb-4"></i>
-              <p className="text-xl text-gray-500">아직 작성된 포스트가 없습니다</p>
+              <p className="text-xl text-gray-500">아직 생성된 포스트가 없습니다.</p>
             </div>
           )}
         </div>

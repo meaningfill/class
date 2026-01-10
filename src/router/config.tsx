@@ -1,12 +1,12 @@
 ﻿import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
-const HomePage = lazy(() => import('../pages/home/page'));
-const ClassDetailPage = lazy(() => import('../pages/classes/detail'));
-const PortfolioPage = lazy(() => import('../pages/portfolio/page'));
-const ProductDetailPage = lazy(() => import('../pages/product/detail'));
-const BlogPage = lazy(() => import('../pages/blog/page'));
-const BlogDetailPage = lazy(() => import('../pages/blog/detail'));
+const HomePage = lazy(() => import('../pages/public/home/page'));
+const ClassDetailPage = lazy(() => import('../pages/public/classes/detail'));
+const PortfolioPage = lazy(() => import('../pages/public/portfolio/page'));
+const ProductDetailPage = lazy(() => import('../pages/public/product/detail'));
+const BlogPage = lazy(() => import('../pages/public/blog/page'));
+const BlogDetailPage = lazy(() => import('../pages/public/blog/detail'));
 const AdminLogin = lazy(() => import('../pages/admin/login'));
 const AdminDashboard = lazy(() => import('../pages/admin/dashboard'));
 const AIBlogGenerator = lazy(() => import('../pages/admin/blog-ai'));
@@ -16,6 +16,8 @@ const AdminPortfolio = lazy(() => import('../pages/admin/portfolio'));
 const AdminBlog = lazy(() => import('../pages/admin/blog'));
 const AdminProducts = lazy(() => import('../pages/admin/products'));
 const AdminProductsAI = lazy(() => import('../pages/admin/products-ai'));
+const AdminContactSettings = lazy(() => import('../pages/admin/contact'));
+const AdminPublishQueue = lazy(() => import('../pages/admin/publish-queue'));
 
 const AIAssistant = lazy(() => import('../AIAssistant'));
 const NotFound = lazy(() => import('../pages/NotFound'));
@@ -84,6 +86,14 @@ const routes: RouteObject[] = [
   {
     path: '/admin/products-ai',
     element: <AdminProductsAI />,
+  },
+  {
+    path: '/admin/contact',
+    element: <AdminContactSettings />,
+  },
+  {
+    path: '/admin/publish-queue',
+    element: <AdminPublishQueue />,
   },
   {
     path: '*',

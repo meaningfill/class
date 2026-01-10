@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../services/supabase';
 import { useNavigate } from 'react-router-dom';
-import type { Class } from '../../lib/supabase';
+import type { Class } from '../../services/supabase';
 
 export default function AdminClasses() {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -50,8 +50,8 @@ export default function AdminClasses() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const features = formData.features.filter(f => f.trim() !== '');
-      
+      const features = formData.features.filter((f) => f.trim() !== '');
+
       if (editingClass) {
         const { error } = await supabase
           .from('classes')
@@ -157,7 +157,7 @@ export default function AdminClasses() {
               className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap"
             >
               <i className="ri-add-line mr-2"></i>
-              새 클래스 추가
+              클래스 추가
             </button>
           </div>
         </div>
@@ -217,7 +217,7 @@ export default function AdminClasses() {
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">
-                {editingClass ? '클래스 수정' : '새 클래스 추가'}
+                {editingClass ? '클래스 수정' : '클래스 추가'}
               </h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 whitespace-nowrap">
                 <i className="ri-close-line text-2xl"></i>

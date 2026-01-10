@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase, type BlogPost } from '../../../lib/supabase';
+import { supabase, type BlogPost } from '../../../../services/supabase';
 
 export default function BlogPreviewSection() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -39,7 +39,7 @@ export default function BlogPreviewSection() {
             블로그에서 최신 인사이트를 확인하세요
           </h2>
           <p className="mt-4 text-base text-slate-500">
-            케이터링 창업과 운영 노하우를 쉽고 빠르게 전합니다.
+            케이터링 창업과 운영 인사이트를 빠르게 전합니다.
           </p>
         </div>
 
@@ -64,7 +64,7 @@ export default function BlogPreviewSection() {
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
-                    <span>{post.author}</span>
+                    <span>Master</span>
                     <span className="w-1 h-1 rounded-full bg-slate-200"></span>
                     <span>{new Date(post.published_at).toLocaleDateString('ko-KR')}</span>
                   </div>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+﻿import { useEffect, useState } from 'react';
+import { supabase } from '../../services/supabase';
 import { useNavigate } from 'react-router-dom';
 
 interface Stats {
@@ -56,7 +56,6 @@ export default function AdminDashboard() {
       });
     } catch (error) {
       console.error('통계 로드 실패:', error);
-      // Set default values on error
       setStats({
         totalClasses: 0,
         totalEnrollments: 0,
@@ -90,7 +89,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상단 네비게이션 */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -115,7 +113,6 @@ export default function AdminDashboard() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 통계 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex items-center justify-between">
@@ -166,7 +163,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* 관리 메뉴 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <a
             href="/admin/classes"
@@ -178,7 +174,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">클래스 관리</h3>
-                <p className="text-sm text-gray-600">클래스 추가, 수정, 삭제</p>
+                <p className="text-sm text-gray-600">클래스 추가, 일정, 삭제</p>
               </div>
             </div>
           </a>
@@ -208,7 +204,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">블로그 관리</h3>
-                <p className="text-sm text-gray-600">포스트 작성 및 수정</p>
+                <p className="text-sm text-gray-600">포스트 생성 및 관리</p>
               </div>
             </div>
           </a>
@@ -230,6 +226,21 @@ export default function AdminDashboard() {
               </div>
             </div>
           </a>
+          
+          <a
+            href="/admin/publish-queue"
+            className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-all group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i className="ri-file-list-3-line text-2xl text-purple-600"></i>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">발행 검수 큐</h3>
+                <p className="text-sm text-gray-600">검수 대기 글 확인</p>
+              </div>
+            </div>
+          </a>
 
           <a
             href="/admin/products"
@@ -240,11 +251,23 @@ export default function AdminDashboard() {
                 <i className="ri-shopping-bag-line text-2xl text-white"></i>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-amber-900 mb-1 flex items-center gap-2">
-                  AI 상품 자동 생성
-                  <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded-full">HOT</span>
-                </h3>
-                <p className="text-sm text-amber-700">상품 등록 & SEO 최적화</p>
+                <h3 className="text-lg font-semibold text-amber-900 mb-1">상품 관리</h3>
+                <p className="text-sm text-amber-700">케이터링 주문 상품 관리</p>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="/admin/products-ai"
+            className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-all group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i className="ri-robot-line text-2xl text-amber-600"></i>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">AI 상품 자동 생성</h3>
+                <p className="text-sm text-gray-600">상품 등록 & SEO 최적화</p>
               </div>
             </div>
           </a>

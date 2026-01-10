@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../services/supabase';
 import { useNavigate } from 'react-router-dom';
-import type { Enrollment } from '../../lib/supabase';
+import type { Enrollment } from '../../services/supabase';
 
 interface EnrollmentWithClass extends Enrollment {
   class_title?: string;
@@ -35,9 +35,9 @@ export default function AdminEnrollments() {
         .from('classes')
         .select('id, title');
 
-      const classMap = new Map(classesData?.map(c => [c.id, c.title]));
+      const classMap = new Map(classesData?.map((item) => [item.id, item.title]));
 
-      const enrichedData = enrollmentsData?.map(enrollment => ({
+      const enrichedData = enrollmentsData?.map((enrollment) => ({
         ...enrollment,
         class_title: classMap.get(enrollment.class_id) || '알 수 없음',
       })) || [];

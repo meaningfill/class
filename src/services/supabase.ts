@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+﻿﻿import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY;
@@ -31,6 +31,28 @@ export interface Portfolio {
   guest_count: number;
   image_url: string;
   date: string;
+  created_at: string;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image_url: string;
+  description: string;
+  detailed_description: string | null;
+  features: string[] | null;
+  components: string[] | null;
+  recommended_events: string[] | null;
+  ingredients: string[] | null;
+  suitable_for: string[] | null;
+  event_type: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  seo_keywords: string | null;
+  show_on_home: boolean | null;
+  home_order: number | null;
+  options: { name: string; values: string[] }[] | null;
   created_at: string;
 }
 
@@ -75,3 +97,38 @@ export interface Enrollment {
   payment_status: string;
   created_at: string;
 }
+export interface SiteSettings {
+  id: number;
+  contact_email: string | null;
+  contact_phone: string | null;
+  contact_address: string | null;
+  updated_at: string | null;
+}
+
+export interface PublishQueueItem {
+  id: string;
+  source_post_id?: string | null;
+  title: string;
+  excerpt: string;
+  content_html: string;
+  meta_description: string | null;
+  image_url: string | null;
+  author: string | null;
+  tags: string[] | null;
+  seo_score: {
+    hasH1: boolean;
+    hasH2: boolean;
+    hasFAQ: boolean;
+    hasMetaDesc: boolean;
+    keywordCount: number;
+    contentLength: number;
+  } | null;
+  status: string;
+  thread_text: string | null;
+  created_at: string;
+  published_at: string | null;
+}
+
+
+
+

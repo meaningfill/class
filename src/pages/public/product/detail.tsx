@@ -1,14 +1,18 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
-import { products } from '../../mocks/products';
+import { supabase } from '../../../services/supabase';
+import type { Product } from '../../../services/supabase';
 
 const MIN_ORDER_QUANTITY = 30;
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [quantity, setQuantity] = useState(MIN_ORDER_QUANTITY);
   const [formData, setFormData] = useState({
@@ -26,26 +30,53 @@ export default function ProductDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const product = products.find(p => p.id === Number(id));
+  useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        if (!id) return;
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        setProduct(data as Product);
+
+        const { data: related } = await supabase
+          .from('products')
+          .select('*')
+          .neq('id', id)
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        setRelatedProducts((related || []) as Product[]);
+      } catch (error) {
+        console.error('상품 로드 실패:', error);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id]);
 
   useEffect(() => {
-    if (!product) {
-      navigate('/');
-      return;
-    }
+    if (!product) return;
 
     const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
+    const description = product.seo_description || product.detailed_description || product.description;
 
-    // Product Schema
     const productSchema = {
       '@context': 'https://schema.org',
       '@type': 'Product',
-      name: product.title,
-      description: product.detailed_description,
+      name: product.name,
+      description,
       image: product.image_url,
       offers: {
         '@type': 'Offer',
-        price: product.price_number,
+        price: product.price,
         priceCurrency: 'KRW',
         availability: 'https://schema.org/InStock',
         url: `${siteUrl}/product/${product.id}`
@@ -54,7 +85,7 @@ export default function ProductDetailPage() {
         '@type': 'Brand',
         name: 'Order Builder'
       },
-      category: product.event_type
+      category: product.event_type || '케이터링'
     };
 
     const script = document.createElement('script');
@@ -62,21 +93,22 @@ export default function ProductDetailPage() {
     script.text = JSON.stringify(productSchema);
     document.head.appendChild(script);
 
-    document.title = `${product.title} | Order Builder`;
+    const seoTitle = product.seo_title || product.name;
+    document.title = `${seoTitle} | Order Builder`;
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', product.detailed_description);
+      metaDescription.setAttribute('content', description);
     }
 
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) {
-      ogTitle.setAttribute('content', product.title);
+      ogTitle.setAttribute('content', seoTitle);
     }
 
     const ogDescription = document.querySelector('meta[property="og:description"]');
     if (ogDescription) {
-      ogDescription.setAttribute('content', product.detailed_description);
+      ogDescription.setAttribute('content', description);
     }
 
     const ogImage = document.querySelector('meta[property="og:image"]');
@@ -89,16 +121,43 @@ export default function ProductDetailPage() {
     return () => {
       document.head.removeChild(script);
     };
-  }, [product, navigate]);
+  }, [product]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
+        <Navbar />
+        <div className="pt-32 pb-20 flex items-center justify-center">
+          <div className="w-12 h-12 border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
+        <Navbar />
+        <div className="pt-32 pb-20 flex items-center justify-center">
+          <div className="text-center">
+            <i className="ri-error-warning-line text-6xl text-gray-300 mb-4"></i>
+            <p className="text-xl text-gray-500">상품을 찾을 수 없습니다.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
+
+  const features = product.features || [];
+  const ingredients = product.ingredients || product.components || [];
+  const suitableFor = product.suitable_for || product.recommended_events || [];
+  const detailedDescription = product.detailed_description || product.description;
+  const totalPrice = product.price * quantity;
 
   const handleOrderClick = () => {
     setFormData(prev => ({
       ...prev,
-      selectedMenu: product.title,
+      selectedMenu: product.name,
       quantity: quantity.toString()
     }));
     setShowOrderModal(true);
@@ -174,8 +233,6 @@ export default function ProductDetailPage() {
     }
   };
 
-  const totalPrice = product.price_number * quantity;
-
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
@@ -183,7 +240,6 @@ export default function ProductDetailPage() {
 
         <div className="pt-32 pb-20">
           <div className="max-w-7xl mx-auto px-6">
-            {/* Breadcrumb */}
             <div className="mb-8">
               <button
                 onClick={() => navigate('/')}
@@ -195,20 +251,19 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="grid lg:grid-cols-2 gap-12">
-              {/* Product Image */}
               <div className="relative">
                 <div className="sticky top-32">
                   <div className="relative bg-white rounded-3xl overflow-hidden shadow-2xl border border-purple-100">
                     <div className="absolute top-6 right-6 z-10">
                       <div className="px-5 py-2 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full shadow-lg">
-                        <span className="text-sm font-bold text-white">{product.event_type}</span>
+                        <span className="text-sm font-bold text-white">{product.event_type || '케이터링'}</span>
                       </div>
                     </div>
                     <div className="w-full h-[500px]">
                       <img
                         src={product.image_url}
-                        alt={product.title}
-                        title={product.title}
+                        alt={product.name}
+                        title={product.name}
                         className="w-full h-full object-cover object-top"
                       />
                     </div>
@@ -216,22 +271,20 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              {/* Product Info */}
               <div className="space-y-8">
                 <div>
                   <h1 className="text-4xl md:text-5xl font-black text-gray-800 mb-4 leading-tight">
-                    {product.title}
+                    {product.name}
                   </h1>
                   <p className="text-xl text-gray-600 leading-relaxed">
                     {product.description}
                   </p>
                 </div>
 
-                {/* Price */}
                 <div className="bg-gradient-to-r from-pink-100 to-purple-100 rounded-2xl p-6 border border-pink-200">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-700 font-semibold">가격</span>
-                    <span className="text-3xl font-black text-pink-500">{product.price}</span>
+                    <span className="text-3xl font-black text-pink-500">{product.price.toLocaleString()}원</span>
                   </div>
                 </div>
 
@@ -239,7 +292,6 @@ export default function ProductDetailPage() {
                   최소 주문 수량: {MIN_ORDER_QUANTITY}개
                 </div>
 
-                {/* Quantity Selector */}
                 <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100">
                   <label className="block text-gray-700 font-semibold mb-3">수량</label>
                   <div className="flex items-center gap-4">
@@ -254,7 +306,7 @@ export default function ProductDetailPage() {
                       min={MIN_ORDER_QUANTITY}
                       value={quantity}
                       onChange={(e) =>
-                        setQuantity(Math.max(MIN_ORDER_QUANTITY, parseInt(e.target.value) || MIN_ORDER_QUANTITY))
+                        setQuantity(Math.max(MIN_ORDER_QUANTITY, parseInt(e.target.value, 10) || MIN_ORDER_QUANTITY))
                       }
                       className="w-20 h-12 text-center text-xl font-bold text-gray-800 bg-white border-2 border-purple-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
                     />
@@ -273,7 +325,6 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
 
-                {/* Order Button */}
                 <button
                   onClick={handleOrderClick}
                   className="w-full py-5 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-2xl shadow-2xl shadow-pink-300/50 hover:shadow-pink-300/80 hover:scale-105 transition-all duration-300 whitespace-nowrap cursor-pointer"
@@ -282,72 +333,77 @@ export default function ProductDetailPage() {
                   주문 문의하기
                 </button>
 
-                {/* Detailed Description */}
                 <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-purple-100">
                   <h2 className="text-2xl font-bold text-gray-800 mb-4">상품 설명</h2>
                   <p className="text-gray-600 leading-relaxed">
-                    {product.detailed_description}
+                    {detailedDescription}
                   </p>
                 </div>
 
-                {/* Features */}
                 <div className="bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl p-8 border border-pink-200">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">주요 특징</h2>
-                  <ul className="space-y-3">
-                    {product.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <i className="ri-checkbox-circle-fill text-xl text-pink-500 flex-shrink-0 mt-0.5"></i>
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {features.length === 0 ? (
+                    <p className="text-gray-600">등록된 특징이 없습니다.</p>
+                  ) : (
+                    <ul className="space-y-3">
+                      {features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                          <i className="ri-checkbox-circle-fill text-xl text-pink-500 flex-shrink-0 mt-0.5"></i>
+                          <span className="text-gray-700">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
-                {/* Ingredients */}
                 <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-purple-100">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">구성</h2>
-                  <div className="flex flex-wrap gap-3">
-                    {product.ingredients.map((ingredient, index) => (
-                      <span
-                        key={index}
-                        className="px-4 py-2 bg-gradient-to-r from-pink-100 to-purple-100 rounded-full text-sm text-gray-700 border border-pink-200"
-                      >
-                        {ingredient}
-                      </span>
-                    ))}
-                  </div>
+                  {ingredients.length === 0 ? (
+                    <p className="text-gray-600">등록된 구성이 없습니다.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {ingredients.map((ingredient, index) => (
+                        <span
+                          key={index}
+                          className="px-4 py-2 bg-gradient-to-r from-pink-100 to-purple-100 rounded-full text-sm text-gray-700 border border-pink-200"
+                        >
+                          {ingredient}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Suitable For */}
                 <div className="bg-gradient-to-br from-purple-100 to-green-100 rounded-2xl p-8 border border-purple-200">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">추천 행사</h2>
-                  <div className="grid grid-cols-2 gap-3">
-                    {product.suitable_for.map((occasion, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 text-gray-700"
-                      >
-                        <i className="ri-star-fill text-pink-500"></i>
-                        <span className="text-sm">{occasion}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {suitableFor.length === 0 ? (
+                    <p className="text-gray-600">등록된 추천 행사가 없습니다.</p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      {suitableFor.map((occasion, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 text-gray-700"
+                        >
+                          <i className="ri-star-fill text-pink-500"></i>
+                          <span className="text-sm">{occasion}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Related Products */}
-            <div className="mt-20">
-              <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-                <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                  다른 메뉴
-                </span>
-              </h2>
-              <div className="grid md:grid-cols-3 gap-8">
-                {products
-                  .filter(p => p.id !== product.id)
-                  .slice(0, 3)
-                  .map((relatedProduct) => (
+            {relatedProducts.length > 0 && (
+              <div className="mt-20">
+                <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+                  <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                    다른 메뉴
+                  </span>
+                </h2>
+                <div className="grid md:grid-cols-3 gap-8">
+                  {relatedProducts.map((relatedProduct) => (
                     <div
                       key={relatedProduct.id}
                       onClick={() => navigate(`/product/${relatedProduct.id}`)}
@@ -356,33 +412,33 @@ export default function ProductDetailPage() {
                       <div className="relative w-full h-48 overflow-hidden">
                         <img
                           src={relatedProduct.image_url}
-                          alt={relatedProduct.title}
+                          alt={relatedProduct.name}
                           className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700"
                         />
                         <div className="absolute top-4 right-4 px-4 py-2 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full">
-                          <span className="text-xs font-bold text-white">{relatedProduct.event_type}</span>
+                          <span className="text-xs font-bold text-white">{relatedProduct.event_type || '케이터링'}</span>
                         </div>
                       </div>
                       <div className="p-6">
                         <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-pink-500 transition-colors line-clamp-2">
-                          {relatedProduct.title}
+                          {relatedProduct.name}
                         </h3>
                         <div className="flex items-center justify-between">
-                          <span className="text-xl font-bold text-pink-500">{relatedProduct.price}</span>
+                          <span className="text-xl font-bold text-pink-500">{relatedProduct.price.toLocaleString()}원</span>
                           <span className="text-sm text-gray-500">자세히 보기</span>
                         </div>
                       </div>
                     </div>
                   ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
         <Footer />
       </div>
 
-      {/* Order Modal */}
       {showOrderModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
@@ -402,13 +458,13 @@ export default function ProductDetailPage() {
             <div className="p-8">
               <div className="text-center mb-8">
                 <div className="inline-block px-6 py-2 bg-gradient-to-r from-pink-100 to-purple-100 backdrop-blur-xl rounded-full border border-pink-200 mb-4">
-                  <span className="text-sm font-semibold text-purple-600 tracking-wider">🍽️ CATERING ORDER</span>
+                  <span className="text-sm font-semibold text-purple-600 tracking-wider">CATERING ORDER</span>
                 </div>
                 <h3 className="text-3xl font-bold text-gray-800 mb-2">
                   케이터링 주문하기
                 </h3>
                 <p className="text-pink-500 text-lg font-semibold">
-                  {product.title}
+                  {product.name}
                 </p>
                 <p className="text-gray-600 mt-2">
                   수량: {quantity}개 | 총 금액:{' '}

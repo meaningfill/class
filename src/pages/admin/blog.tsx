@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import type { BlogPost } from '../../lib/supabase';
+import { supabase } from '../../services/supabase';
+import type { BlogPost } from '../../services/supabase';
+
+const GEMINI_API_KEY = import.meta.env.VITE_API_KEY as string | undefined;
+const GEMINI_MODEL = (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || 'gemini-2.0-flash';
+const MIN_CONTENT_CHARS = 3000;
 
 export default function AdminBlog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -9,6 +13,7 @@ export default function AdminBlog() {
   const [showModal, setShowModal] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const navigate = useNavigate();
@@ -48,6 +53,133 @@ export default function AdminBlog() {
     }
   };
 
+  const extractJson = (text: string) => {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('JSON 추출 실패');
+    return JSON.parse(match[0]);
+  };
+
+  const callGeminiJson = async (prompt: string) => {
+    if (!GEMINI_API_KEY) {
+      throw new Error('GEMINI API 키가 없습니다.');
+    }
+
+    const models = [GEMINI_MODEL, 'gemini-1.5-flash'];
+    let lastError: Error | null = null;
+
+    for (const model of models) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+            }),
+          }
+        );
+
+        const data = await response.json();
+        const text = data?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || '').join('');
+        if (!text) throw new Error('빈 응답');
+        return extractJson(text);
+      } catch (error: any) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error('Gemini 호출 실패');
+  };
+
+  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, ' ');
+
+  const calculateSeoScore = (html: string, metaDesc: string, keywordsText: string) => {
+    const keywordArray = keywordsText.split(',').map((k) => k.trim()).filter(Boolean);
+    const textContent = stripHtml(html).toLowerCase();
+
+    let keywordCount = 0;
+    keywordArray.forEach((kw) => {
+      const regex = new RegExp(kw, 'gi');
+      const matches = textContent.match(regex);
+      if (matches) keywordCount += matches.length;
+    });
+
+    return {
+      hasH1: /<h1[^>]*>/i.test(html),
+      hasH2: /<h2[^>]*>/i.test(html),
+      hasFAQ: /faq|자주\s*묻는\s*질문/i.test(html),
+      hasMetaDesc: metaDesc.length >= 50 && metaDesc.length <= 160,
+      keywordCount,
+      contentLength: stripHtml(html).length,
+    };
+  };
+
+  const buildRewritePrompt = (title: string, excerpt: string) => `
+너는 케이터링/요식업 전문 블로그 에디터다.
+
+아래 제목을 유지하고 본문만 새로 작성해.
+- 최소 ${MIN_CONTENT_CHARS}자 이상
+- 한국어
+- 중복 없는 새로운 내용
+- JSON만 출력
+
+제목: ${title}
+기존 요약: ${excerpt}
+
+HTML 스타일
+h1: class="text-3xl font-bold text-gray-900 mb-6"
+h2: class="text-2xl font-bold text-gray-800 mt-10 mb-4 border-b-2 border-purple-500 pb-2"
+h3: class="text-xl font-semibold text-gray-800 mt-6 mb-3"
+p: class="text-base text-gray-700 leading-relaxed mb-4"
+
+JSON:
+{
+  "content_html": "string"
+}
+  `.trim();
+
+  const handleRegenerateToQueue = async (post: BlogPost) => {
+    if (regeneratingId) return;
+    setRegeneratingId(post.id);
+
+    try {
+      const result = await callGeminiJson(buildRewritePrompt(post.title, post.excerpt));
+      const contentHtml = result.content_html || '';
+      const contentLength = stripHtml(contentHtml).length;
+      if (contentLength < MIN_CONTENT_CHARS) {
+        throw new Error(`본문 길이가 ${MIN_CONTENT_CHARS}자 미만입니다. (${contentLength}자)`);
+      }
+
+      const seoScore = calculateSeoScore(contentHtml, post.excerpt, post.title);
+
+      const payload = {
+        source_post_id: post.id,
+        title: post.title,
+        excerpt: post.excerpt,
+        content_html: contentHtml,
+        meta_description: post.excerpt,
+        image_url: post.image_url,
+        author: 'Master',
+        tags: [],
+        seo_score: seoScore,
+        status: 'pending_review',
+        thread_text: `[1/3] ${post.title}\n\n${post.excerpt}\n\n자세히 보기: (발행 후 URL 입력)`,
+        created_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase.from('publish_queue').insert([payload]);
+      if (error) throw error;
+
+      alert('검수 큐에 등록되었습니다.');
+    } catch (error: any) {
+      console.error('자동 생성 실패:', error);
+      alert(error.message || '자동 생성 실패');
+    } finally {
+      setRegeneratingId(null);
+    }
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -55,7 +187,7 @@ export default function AdminBlog() {
         alert('이미지 크기는 5MB 이하여야 합니다.');
         return;
       }
-      
+
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -89,11 +221,11 @@ export default function AdminBlog() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
-    
+
     try {
       let imageUrl = formData.image_url;
-      
-      // 새 이미지 파일이 있으면 업로드
+
+      // 이미지 파일이 있으면 업로드
       if (imageFile) {
         imageUrl = await uploadImage(imageFile);
       }
@@ -103,25 +235,23 @@ export default function AdminBlog() {
         content: formData.content,
         excerpt: formData.excerpt,
         image_url: imageUrl,
-        author: formData.author,
+        author: 'Master',
         published_at: formData.published_at,
       };
 
       if (editingPost) {
-        // 수정 모드
         const { error } = await supabase
           .from('blog_posts')
           .update(postData)
           .eq('id', editingPost.id);
         if (error) throw error;
-        alert('블로그 포스트가 수정되었습니다!');
+        alert('블로그 포스트가 수정되었습니다.');
       } else {
-        // 새 글 작성 모드
         const { error } = await supabase
           .from('blog_posts')
           .insert([postData]);
         if (error) throw error;
-        alert('블로그 포스트가 발행되었습니다!');
+        alert('블로그 포스트가 발행되었습니다.');
       }
 
       setShowModal(false);
@@ -154,7 +284,7 @@ export default function AdminBlog() {
       content: post.content,
       excerpt: post.excerpt,
       image_url: post.image_url,
-      author: post.author,
+      author: 'Master',
       published_at: post.published_at.split('T')[0],
     });
     setImagePreview(post.image_url);
@@ -203,7 +333,7 @@ export default function AdminBlog() {
               className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap"
             >
               <i className="ri-add-line mr-2"></i>
-              새 포스트 작성
+              포스트 생성
             </button>
           </div>
         </div>
@@ -222,7 +352,7 @@ export default function AdminBlog() {
                     <h3 className="text-lg font-bold text-gray-900 mb-2">{post.title}</h3>
                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.excerpt}</p>
                     <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                      <span><i className="ri-user-line mr-1"></i>{post.author}</span>
+                      <span><i className="ri-user-line mr-1"></i>Master</span>
                       <span><i className="ri-calendar-line mr-1"></i>{new Date(post.published_at).toLocaleDateString('ko-KR')}</span>
                     </div>
                     <div className="flex gap-2">
@@ -232,6 +362,14 @@ export default function AdminBlog() {
                       >
                         <i className="ri-edit-line mr-1"></i>
                         수정
+                      </button>
+                      <button
+                        onClick={() => handleRegenerateToQueue(post)}
+                        disabled={regeneratingId === post.id}
+                        className="px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors text-sm whitespace-nowrap disabled:opacity-60"
+                      >
+                        <i className="ri-magic-line mr-1"></i>
+                        {regeneratingId === post.id ? '생성 중...' : '검수큐 재생성'}
                       </button>
                       <button
                         onClick={() => handleDelete(post.id)}
@@ -250,7 +388,7 @@ export default function AdminBlog() {
           {posts.length === 0 && (
             <div className="text-center py-12">
               <i className="ri-article-line text-6xl text-gray-300 mb-4"></i>
-              <p className="text-gray-600">작성된 블로그 포스트가 없습니다.</p>
+              <p className="text-gray-600">생성된 블로그 포스트가 없습니다.</p>
             </div>
           )}
         </div>
@@ -261,7 +399,7 @@ export default function AdminBlog() {
           <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">
-                {editingPost ? '포스트 수정' : '새 포스트 작성'}
+                {editingPost ? '포스트 수정' : '포스트 생성'}
               </h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 whitespace-nowrap">
                 <i className="ri-close-line text-2xl"></i>
@@ -333,7 +471,7 @@ export default function AdminBlog() {
                       <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-amber-500 transition-colors text-center">
                         <i className="ri-upload-cloud-line text-2xl text-gray-400 mb-2"></i>
                         <p className="text-sm text-gray-600">
-                          {imageFile ? imageFile.name : '이미지를 선택하세요 (최대 5MB)'}
+                          {imageFile ? imageFile.name : '이미지를 선택해주세요 (최대 5MB)'}
                         </p>
                       </div>
                       <input
@@ -344,7 +482,7 @@ export default function AdminBlog() {
                       />
                     </label>
                   </div>
-                  
+
                   {imagePreview && (
                     <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
                       <img
@@ -365,7 +503,7 @@ export default function AdminBlog() {
                       </button>
                     </div>
                   )}
-                  
+
                   <p className="text-xs text-gray-500">
                     JPG, PNG, GIF 형식 지원 (최대 5MB)
                   </p>
@@ -389,7 +527,7 @@ export default function AdminBlog() {
                   {uploading ? (
                     <>
                       <i className="ri-loader-4-line animate-spin mr-2"></i>
-                      업로드 중...
+                      저장 중...
                     </>
                   ) : (
                     editingPost ? '수정' : '발행'

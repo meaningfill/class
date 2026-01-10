@@ -7,7 +7,7 @@ export default function Comparison() {
           <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-900 leading-tight">
             왜 사람들은 일반 요리 학원 대신
             <br />
-            <span className="text-pink-500">테이블원</span>을 선택할까요?
+            <span className="text-pink-500">Order Builder</span>을 선택할까요?
           </h2>
         </div>
 
@@ -69,7 +69,7 @@ export default function Comparison() {
                 완성되는 시스템 산출물
               </h3>
               <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-                테이블원은 막연한 강의가 아닙니다. 실제로 운영 가능한 결과물을
+                Order Builder는 막연한 강의가 아닙니다. 실제로 운영 가능한 결과물을
                 <br />
                 즉시 활용할 수 있게 설계합니다.
               </p>

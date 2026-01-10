@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../services/supabase';
 import { useNavigate } from 'react-router-dom';
+
+const GEMINI_API_KEY = import.meta.env.VITE_API_KEY as string | undefined;
+const GEMINI_MODEL = (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || 'gemini-2.0-flash';
 
 export default function AdminProductsAI() {
   const [loading, setLoading] = useState(false);
@@ -8,6 +11,7 @@ export default function AdminProductsAI() {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [formData, setFormData] = useState({
     basicInfo: '',
+    eventType: '',
     price: '',
     components: '',
     recommendedEvents: '',
@@ -27,6 +31,68 @@ export default function AdminProductsAI() {
     }
   };
 
+  const extractJson = (text: string) => {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('JSON 추출 실패');
+    return JSON.parse(match[0]);
+  };
+
+  const callGeminiJson = async (prompt: string) => {
+    if (!GEMINI_API_KEY) {
+      throw new Error('GEMINI API 키가 없습니다.');
+    }
+
+    const models = [GEMINI_MODEL, 'gemini-1.5-flash'];
+    let lastError: Error | null = null;
+
+    for (const model of models) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+            }),
+          }
+        );
+
+        const data = await response.json();
+        const text = data?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || '').join('');
+        if (!text) throw new Error('빈 응답');
+        return extractJson(text);
+      } catch (error: any) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error('Gemini 호출 실패');
+  };
+
+  const buildProductPrompt = () => `
+너는 케이터링 상품 상세를 작성하는 SEO 에디터다.
+아래 정보로 상품명을 포함한 상세 정보를 생성해줘.
+JSON만 출력.
+
+기본 정보: ${formData.basicInfo}
+카테고리: ${formData.eventType}
+구성: ${formData.components}
+추천 행사: ${formData.recommendedEvents}
+가격: ${formData.price}원
+
+JSON:
+{
+  "name": "string",
+  "description": "string (한 줄 요약)",
+  "detailed_description": "string (2~4문장)",
+  "features": ["string","string","string","string","string"],
+  "seo_title": "string",
+  "seo_description": "string",
+  "seo_keywords": "string (쉼표 구분)"
+}
+  `.trim();
+
   const handleGenerate = async () => {
     if (!imageFile || !formData.basicInfo || !formData.price) {
       alert('이미지와 기본 정보, 가격을 입력해주세요.');
@@ -36,10 +102,9 @@ export default function AdminProductsAI() {
     setLoading(true);
 
     try {
-      // 이미지 업로드
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('products')
         .upload(fileName, imageFile);
 
@@ -49,19 +114,39 @@ export default function AdminProductsAI() {
         .from('products')
         .getPublicUrl(fileName);
 
-      // AI 생성 시뮬레이션 (실제로는 OpenAI API 등을 사용)
-      const generated = {
-        name: generateProductName(formData.basicInfo),
-        description: generateDescription(formData.basicInfo),
-        features: generateFeatures(formData.basicInfo),
-        components: formData.components.split(',').map(c => c.trim()).filter(c => c),
-        recommendedEvents: formData.recommendedEvents.split(',').map(e => e.trim()).filter(e => e),
-        seoTitle: generateSEOTitle(formData.basicInfo),
-        seoDescription: generateSEODescription(formData.basicInfo),
-        seoKeywords: generateSEOKeywords(formData.basicInfo),
-        imageUrl: publicUrl,
-        price: parseInt(formData.price),
-      };
+      let generated;
+      if (GEMINI_API_KEY) {
+        const result = await callGeminiJson(buildProductPrompt());
+        generated = {
+          name: result.name,
+          description: result.description,
+          detailedDescription: result.detailed_description,
+          features: result.features || [],
+          components: formData.components.split(',').map((c) => c.trim()).filter((c) => c),
+          recommendedEvents: formData.recommendedEvents.split(',').map((e) => e.trim()).filter((e) => e),
+          seoTitle: result.seo_title,
+          seoDescription: result.seo_description,
+          seoKeywords: result.seo_keywords,
+          imageUrl: publicUrl,
+          price: parseInt(formData.price, 10),
+          eventType: formData.eventType,
+        };
+      } else {
+        generated = {
+          name: generateProductName(formData.basicInfo),
+          description: generateDescription(formData.basicInfo),
+          detailedDescription: generateDescription(formData.basicInfo),
+          features: generateFeatures(formData.basicInfo),
+          components: formData.components.split(',').map((c) => c.trim()).filter((c) => c),
+          recommendedEvents: formData.recommendedEvents.split(',').map((e) => e.trim()).filter((e) => e),
+          seoTitle: generateSEOTitle(formData.basicInfo),
+          seoDescription: generateSEODescription(formData.basicInfo),
+          seoKeywords: generateSEOKeywords(formData.basicInfo),
+          imageUrl: publicUrl,
+          price: parseInt(formData.price, 10),
+          eventType: formData.eventType,
+        };
+      }
 
       setGeneratedData(generated);
     } catch (error) {
@@ -83,9 +168,11 @@ export default function AdminProductsAI() {
         price: generatedData.price,
         image_url: generatedData.imageUrl,
         description: generatedData.description,
+        detailed_description: generatedData.detailedDescription,
         features: generatedData.features,
         components: generatedData.components,
         recommended_events: generatedData.recommendedEvents,
+        event_type: generatedData.eventType,
         seo_title: generatedData.seoTitle,
         seo_description: generatedData.seoDescription,
         seo_keywords: generatedData.seoKeywords,
@@ -93,7 +180,7 @@ export default function AdminProductsAI() {
 
       if (error) throw error;
 
-      alert('상품이 등록되었습니다!');
+      alert('상품이 등록되었습니다.');
       navigate('/admin/products');
     } catch (error) {
       console.error('저장 실패:', error);
@@ -103,54 +190,55 @@ export default function AdminProductsAI() {
     }
   };
 
-  // AI 생성 함수들
   const generateProductName = (info: string) => {
     const keywords = info.toLowerCase();
     if (keywords.includes('디저트') || keywords.includes('dessert')) {
-      return `프리미엄 디저트박스 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 10) + 1}`;
-    } else if (keywords.includes('샌드') || keywords.includes('sandwich')) {
-      return `신선한 샌드박스 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 10) + 1}`;
-    } else if (keywords.includes('도시락') || keywords.includes('lunch')) {
-      return `건강한 도시락 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 10) + 1}`;
+      return `프리미엄 디저트 박스 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 10) + 1}`;
     }
-    return `특별한 메뉴 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 10) + 1}`;
+    if (keywords.includes('샌드위치') || keywords.includes('sandwich')) {
+      return `신선 샌드위치 박스 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 10) + 1}`;
+    }
+    if (keywords.includes('도시락') || keywords.includes('lunch')) {
+      return `건강 도시락 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 10) + 1}`;
+    }
+    return `스페셜 케이터링 메뉴 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 10) + 1}`;
   };
 
   const generateDescription = (info: string) => {
-    return `${info}로 정성스럽게 준비한 프리미엄 케이터링 메뉴입니다. 신선한 재료와 정갈한 구성으로 특별한 순간을 더욱 빛나게 만들어드립니다. 각종 행사와 모임에 완벽한 선택입니다.`;
+    return `${info}를 기반으로 정성껏 준비한 프리미엄 케이터링 메뉴입니다. 신선한 재료와 균형 잡힌 구성으로 특별한 행사와 모임에 잘 어울리도록 설계했습니다.`;
   };
 
   const generateFeatures = (info: string) => {
     return [
-      '신선한 당일 제조 식재료 사용',
-      '위생적인 개별 포장',
+      '신선한 재료로 구성',
+      '개별 포장으로 위생 강화',
       '영양 균형을 고려한 구성',
-      '다양한 입맛을 고려한 메뉴',
-      '행사 컨셉에 맞는 플레이팅',
+      '행사 목적에 맞춘 맞춤형 옵션',
+      `${info}에 최적화된 메뉴 설계`,
     ];
   };
 
   const generateSEOTitle = (info: string) => {
     const keywords = info.toLowerCase();
     if (keywords.includes('디저트')) {
-      return '프리미엄 디저트박스 | 케이터링 전문 미닝필 | 행사 디저트 배달';
-    } else if (keywords.includes('샌드')) {
-      return '신선한 샌드위치 박스 | 케이터링 전문 미닝필 | 행사 도시락';
+      return '프리미엄 디저트 박스 | 케이터링 디저트 전문';
     }
-    return `${info} | 케이터링 전문 미닝필 | 행사 음식 배달`;
+    if (keywords.includes('샌드위치')) {
+      return '샌드위치 케이터링 박스 | 행사 전문 메뉴';
+    }
+    return `${info} | 케이터링 전문 메뉴`;
   };
 
   const generateSEODescription = (info: string) => {
-    return `${info}로 준비한 프리미엄 케이터링 메뉴. 신선한 재료와 정성스러운 조리로 특별한 행사를 완성합니다. 기업 행사, 세미나, 워크샵, 파티 등 다양한 행사에 최적화된 메뉴를 제공합니다.`;
+    return `${info}로 준비한 프리미엄 케이터링 메뉴. 신선한 재료와 균형 잡힌 구성으로 기업 행사, 모임, 웨딩 등 다양한 행사에 적합합니다.`;
   };
 
   const generateSEOKeywords = (info: string) => {
-    return `케이터링, 행사음식, 도시락배달, 샌드위치박스, 디저트박스, ${info}, 미닝필, 기업행사, 세미나음식`;
+    return `케이터링, 행사 도시락, 샌드위치 박스, 디저트 박스, ${info}`;
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
-      {/* 상단 네비게이션 */}
       <nav className="bg-white/80 backdrop-blur-sm border-b border-amber-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -174,14 +262,12 @@ export default function AdminProductsAI() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* 입력 폼 */}
           <div className="bg-white rounded-2xl shadow-xl border border-amber-100 p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <i className="ri-upload-cloud-line text-amber-600"></i>
               상품 정보 입력
             </h2>
 
-            {/* 이미지 업로드 */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 상품 이미지 *
@@ -207,7 +293,6 @@ export default function AdminProductsAI() {
               </div>
             </div>
 
-            {/* 기본 정보 */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 상품 기본 정보 *
@@ -215,7 +300,7 @@ export default function AdminProductsAI() {
               <textarea
                 value={formData.basicInfo}
                 onChange={(e) => setFormData({ ...formData, basicInfo: e.target.value })}
-                placeholder="예: 신선한 샌드위치와 과일이 들어간 건강한 도시락"
+                placeholder="예: 신선한 샌드위치와 과일로 구성한 건강 도시락"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
                 rows={3}
                 maxLength={500}
@@ -223,10 +308,22 @@ export default function AdminProductsAI() {
               <p className="text-xs text-gray-500 mt-1">{formData.basicInfo.length}/500</p>
             </div>
 
-            {/* 가격 */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                가격 (원) *
+                카테고리
+              </label>
+              <input
+                type="text"
+                value={formData.eventType}
+                onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
+                placeholder="예: 샌드박스, 디저트박스, 프리미엄박스"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                가격(원) *
               </label>
               <input
                 type="number"
@@ -237,10 +334,9 @@ export default function AdminProductsAI() {
               />
             </div>
 
-            {/* 구성품 */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                구성품 (쉼표로 구분)
+                구성품(쉼표로 구분)
               </label>
               <input
                 type="text"
@@ -251,16 +347,15 @@ export default function AdminProductsAI() {
               />
             </div>
 
-            {/* 추천 행사 */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                추천 행사 (쉼표로 구분)
+                추천 행사(쉼표로 구분)
               </label>
               <input
                 type="text"
                 value={formData.recommendedEvents}
                 onChange={(e) => setFormData({ ...formData, recommendedEvents: e.target.value })}
-                placeholder="세미나, 워크샵, 기업 행사"
+                placeholder="기업 행사, 워크숍"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
@@ -284,7 +379,6 @@ export default function AdminProductsAI() {
             </button>
           </div>
 
-          {/* 생성 결과 */}
           <div className="bg-white rounded-2xl shadow-xl border border-amber-100 p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <i className="ri-file-text-line text-amber-600"></i>
@@ -296,11 +390,14 @@ export default function AdminProductsAI() {
                 <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <i className="ri-robot-line text-4xl text-amber-600"></i>
                 </div>
-                <p className="text-gray-600">AI가 상품 정보를 생성하면<br />여기에 표시됩니다</p>
+                <p className="text-gray-600">
+                  AI가 상품 정보를 생성하면
+                  <br />
+                  여기에 표시됩니다.
+                </p>
               </div>
             ) : (
               <div className="space-y-6">
-                {/* 상품명 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">상품명</label>
                   <input
@@ -311,7 +408,6 @@ export default function AdminProductsAI() {
                   />
                 </div>
 
-                {/* 설명 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">상품 설명</label>
                   <textarea
@@ -322,7 +418,36 @@ export default function AdminProductsAI() {
                   />
                 </div>
 
-                {/* SEO 정보 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">상품 상세 설명</label>
+                  <textarea
+                    value={generatedData.detailedDescription || ''}
+                    onChange={(e) => setGeneratedData({ ...generatedData, detailedDescription: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">주요 특징 (쉼표 구분)</label>
+                  <input
+                    type="text"
+                    value={(generatedData.features || []).join(', ')}
+                    onChange={(e) => setGeneratedData({ ...generatedData, features: e.target.value.split(',').map((v: string) => v.trim()).filter((v: string) => v) })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">카테고리</label>
+                  <input
+                    type="text"
+                    value={generatedData.eventType || ''}
+                    onChange={(e) => setGeneratedData({ ...generatedData, eventType: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  />
+                </div>
+
                 <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-200">
                   <h3 className="text-sm font-bold text-purple-900 mb-3 flex items-center gap-2">
                     <i className="ri-seo-line"></i>
@@ -359,7 +484,6 @@ export default function AdminProductsAI() {
                   </div>
                 </div>
 
-                {/* 저장 버튼 */}
                 <button
                   onClick={handleSave}
                   disabled={loading}

@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../services/supabase';
 
 interface BlogGenerationForm {
   topic: string;
@@ -46,6 +46,7 @@ const GOOGLE_CSE_CX = import.meta.env.VITE_GOOGLE_CSE_CX as string | undefined;
 const GEMINI_MODEL = (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || 'gemini-2.0-flash';
 const USE_IMAGEN = (import.meta.env.VITE_USE_IMAGEN as string | undefined) === 'true';
 const MIN_CONTENT_CHARS = 3000;
+const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://orderbuilder.co.kr';
 
 // ============================================
 // 톤 가이드 상세 정의
@@ -212,6 +213,27 @@ const buildSlug = (title: string) => title
   .replace(/\s+/g, '-')
   .replace(/-+/g, '-')
   .trim();
+const buildThreadText = (content: GeneratedBlogContent) => {
+  const hashtags = (content.tags || [])
+    .map(tag => `#${tag.replace(/\s+/g, '')}`)
+    .join(' ');
+  const lines = [
+    `[1/10] ${content.title}`,
+    `[2/10] 한 줄 요약\n${content.excerpt}`,
+    '[3/10] 왜 중요한가\n현장에서 바로 성과로 이어지는 핵심 포인트를 정리했습니다.',
+    '[4/10] 핵심 프레임워크\n문제를 정의 → 원인 파악 → 실행 체크리스트 순서로 접근합니다.',
+    '[5/10] 실행 체크 1\n지금 바로 적용 가능한 1차 액션을 제안합니다.',
+    '[6/10] 실행 체크 2\n효율을 올리는 운영 팁과 실수 방지 포인트를 담았습니다.',
+    '[7/10] 케이스 인사이트\n실제 상황에서 자주 놓치는 지점을 짚었습니다.',
+    '[8/10] 요약 정리\n핵심만 다시 정리하면, 안정성 + 효율 + 품질이 동시에 개선됩니다.',
+    '[9/10] 실무 적용 팁\n팀과 공유 가능한 짧은 규칙/루틴으로 만들면 유지가 쉽습니다.',
+    '[10/10] 자세히 보기: (발행 후 URL 입력)',
+  ];
+  if (hashtags) {
+    lines.push(hashtags);
+  }
+  return lines.join('\n\n');
+};
 
 const calculateSeoScore = (html: string, metaDesc: string, keywords: string) => {
   const keywordArray = keywords.split(',').map(k => k.trim().toLowerCase());
@@ -417,6 +439,24 @@ export default function AIBlogGenerator() {
     throw new Error('이미지 생성 실패');
   };
 
+  const generateTextFreeImage = async (prompt: string): Promise<string> => {
+    let firstUrl = '';
+    try {
+      firstUrl = await generateImageWithGemini(prompt);
+    } catch (error) {
+      console.error('이미지 1차 생성 실패:', error);
+    }
+
+    const retryPrompt = `${prompt}, ultra-clean background, no menu cards, no signs, no writing, no letters, no digits`;
+    try {
+      const retryUrl = await generateImageWithGemini(retryPrompt);
+      return retryUrl || firstUrl;
+    } catch (error) {
+      console.error('이미지 2차 생성 실패:', error);
+      return firstUrl;
+    }
+  };
+
   const uploadBase64Image = async (base64Data: string): Promise<string> => {
     try {
       const byteCharacters = atob(base64Data);
@@ -528,6 +568,8 @@ h1: class="text-3xl font-bold text-gray-900 mb-6"
 h2: class="text-2xl font-bold text-gray-800 mt-10 mb-4 border-b-2 border-purple-500 pb-2"
 h3: class="text-xl font-semibold text-gray-800 mt-6 mb-3"
 p: class="text-base text-gray-700 leading-relaxed mb-4"
+ul: class="list-disc pl-6 my-6 text-gray-700"
+li: class="mb-2"
 
 ## 구조
 <article class="prose max-w-none">
@@ -623,7 +665,7 @@ JSON:
       let allowedLinks = Array.from(new Set([...userReferenceLinks, ...cseLinks])).slice(0, 5);
 
       if (allowedLinks.length < 2) {
-        allowedLinks = ['https://www.tableone.co.kr', 'https://www.foodservice.co.kr'];
+        allowedLinks = [SITE_URL, 'https://www.foodservice.co.kr'];
       }
 
       const result = await callGeminiJson(buildArticlePrompt(allowedLinks));
@@ -633,11 +675,11 @@ JSON:
       let inlineImageUrl = '';
       if (formData.includeImages) {
         try {
-          const imagePrompt = `Ultra-realistic food photography, ${formData.topic}, ${formData.imageStyle}, natural light, shallow depth of field, candid styling, no text, no typography, no letters, no numbers, no watermark, no logo, no packaging labels, no signage`;
-          imageUrl = await generateImageWithGemini(imagePrompt);
+          const imagePrompt = `Ultra-realistic food photography of ${formData.topic}, ${formData.imageStyle}, plated catering, clean background, natural light, shallow depth of field, candid styling, no text, no typography, no letters, no numbers, no watermark, no logo, no packaging labels, no signage, no brand marks, no words, no menu cards, no signs, no writing`;
+          imageUrl = await generateTextFreeImage(imagePrompt);
           if (contentHtml.match(/<img\b/i)) {
-            const inlinePrompt = `Ultra-realistic food photography, ${formData.topic}, ${formData.imageStyle}, different composition, different angle, natural light, shallow depth of field, candid styling, no text, no typography, no letters, no numbers, no watermark, no logo, no packaging labels, no signage`;
-            inlineImageUrl = await generateImageWithGemini(inlinePrompt);
+            const inlinePrompt = `Ultra-realistic food photography of ${formData.topic}, ${formData.imageStyle}, different composition, different angle, plated catering, clean background, natural light, shallow depth of field, candid styling, no text, no typography, no letters, no numbers, no watermark, no logo, no packaging labels, no signage, no brand marks, no words, no menu cards, no signs, no writing`;
+            inlineImageUrl = await generateTextFreeImage(inlinePrompt);
           }
         } catch (imgError) {
           console.error('이미지 생성 실패:', imgError);
@@ -667,7 +709,7 @@ JSON:
         tags: result.tags || [],
         image_alt: imageAlt,
         image_url: imageUrl,
-        author: user?.email || 'Order Builder 에디터',
+        author: 'Master',
         sources_used: result.sources_used || allowedLinks,
         seo_score: seoScore,
       };
@@ -708,26 +750,40 @@ JSON:
     const contentToPublish = editedContent || generatedContent;
     if (!contentToPublish) return;
 
+    const contentLength = stripHtml(contentToPublish.content_html || '').length;
+    if (contentLength < MIN_CONTENT_CHARS) {
+      alert(`본문은 최소 ${MIN_CONTENT_CHARS}자 이상이어야 합니다. (현재 ${contentLength}자)`);
+      return;
+    }
+
     try {
-      const slug = `${buildSlug(contentToPublish.title)}-${Date.now()}`;
-      const { error } = await supabase.from('blog_posts').insert([{
+      const { error } = await supabase.from('publish_queue').insert([{
         title: contentToPublish.title,
-        slug,
         excerpt: contentToPublish.excerpt,
-        content: contentToPublish.content_html,
+        content_html: contentToPublish.content_html,
+        meta_description: contentToPublish.meta_description,
         image_url: contentToPublish.image_url || '',
-        author: contentToPublish.author,
-        published_at: new Date().toISOString(),
+        author: 'Master',
+        tags: contentToPublish.tags || [],
+        seo_score: contentToPublish.seo_score ?? null,
+        status: 'pending_review',
+        thread_text: buildThreadText(contentToPublish),
+        created_at: new Date().toISOString(),
       }]);
 
-      if (error) throw error;
-      alert('블로그 포스트가 발행되었습니다!');
-      navigate('/admin/blog');
+      if (error) {
+        if (error.code === '42P01' || String(error.message).includes('publish_queue')) {
+          console.error('publish_queue table missing. Create it in Supabase SQL editor.');
+          return;
+        }
+        throw error;
+      }
+      alert('검수 대기 큐에 저장되었습니다.');
+      navigate('/admin/publish-queue');
     } catch (error: any) {
       alert(`저장 실패: ${error.message}`);
     }
   };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/admin/login');
@@ -871,7 +927,7 @@ JSON:
                       disabled={isGeneratingKeywords || !formData.topic.trim()}
                       className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full hover:bg-blue-200 disabled:opacity-50"
                     >
-                      {isGeneratingKeywords ? '생성중...' : '🔮 자동생성'}
+                      {isGeneratingKeywords ? '생성중...' : 'AI 자동생성'}
                     </button>
                   </div>
                   <input
@@ -935,7 +991,7 @@ JSON:
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900">
-                  {isEditing ? '✏️ 편집 모드' : '👀 미리보기'}
+                  {isEditing ? '편집 모드' : '미리보기'}
                 </h2>
                 {currentContent && (
                   <div className="flex gap-2">
@@ -1109,13 +1165,13 @@ JSON:
                       <h4 className="text-sm font-bold text-green-900 mb-2">SEO 점수 (실시간)</h4>
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className={`p-2 rounded ${editedContent.seo_score.hasH1 ? 'bg-green-100' : 'bg-red-100'}`}>
-                          H1: {editedContent.seo_score.hasH1 ? '✓' : '✗'}
+                          H1: {editedContent.seo_score.hasH1 ? '있음' : '없음'}
                         </div>
                         <div className={`p-2 rounded ${editedContent.seo_score.hasH2 ? 'bg-green-100' : 'bg-red-100'}`}>
-                          H2: {editedContent.seo_score.hasH2 ? '✓' : '✗'}
+                          H2: {editedContent.seo_score.hasH2 ? '있음' : '없음'}
                         </div>
                         <div className={`p-2 rounded ${editedContent.seo_score.hasMetaDesc ? 'bg-green-100' : 'bg-red-100'}`}>
-                          메타: {editedContent.seo_score.hasMetaDesc ? '✓' : '✗'}
+                          메타: {editedContent.seo_score.hasMetaDesc ? '있음' : '없음'}
                         </div>
                         <div className="p-2 rounded bg-blue-100 col-span-3">
                           본문: {editedContent.seo_score.contentLength.toLocaleString()}자 | 키워드: {editedContent.seo_score.keywordCount}회
@@ -1148,10 +1204,10 @@ JSON:
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <h4 className="text-sm font-bold text-green-900 mb-3">SEO 최적화 점수</h4>
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className={`p-2 rounded ${currentContent.seo_score.hasH1 ? 'bg-green-100' : 'bg-red-100'}`}>H1: {currentContent.seo_score.hasH1 ? '✓' : '✗'}</div>
-                        <div className={`p-2 rounded ${currentContent.seo_score.hasH2 ? 'bg-green-100' : 'bg-red-100'}`}>H2: {currentContent.seo_score.hasH2 ? '✓' : '✗'}</div>
-                        <div className={`p-2 rounded ${currentContent.seo_score.hasFAQ ? 'bg-green-100' : 'bg-yellow-100'}`}>FAQ: {currentContent.seo_score.hasFAQ ? '✓' : '✗'}</div>
-                        <div className={`p-2 rounded ${currentContent.seo_score.hasMetaDesc ? 'bg-green-100' : 'bg-red-100'}`}>메타: {currentContent.seo_score.hasMetaDesc ? '✓' : '✗'}</div>
+                        <div className={`p-2 rounded ${currentContent.seo_score.hasH1 ? 'bg-green-100' : 'bg-red-100'}`}>H1: {currentContent.seo_score.hasH1 ? '있음' : '없음'}</div>
+                        <div className={`p-2 rounded ${currentContent.seo_score.hasH2 ? 'bg-green-100' : 'bg-red-100'}`}>H2: {currentContent.seo_score.hasH2 ? '있음' : '없음'}</div>
+                        <div className={`p-2 rounded ${currentContent.seo_score.hasFAQ ? 'bg-green-100' : 'bg-yellow-100'}`}>FAQ: {currentContent.seo_score.hasFAQ ? '있음' : '없음'}</div>
+                        <div className={`p-2 rounded ${currentContent.seo_score.hasMetaDesc ? 'bg-green-100' : 'bg-red-100'}`}>메타: {currentContent.seo_score.hasMetaDesc ? '있음' : '없음'}</div>
                         <div className="p-2 rounded bg-blue-100">키워드: {currentContent.seo_score.keywordCount}회</div>
                         <div className="p-2 rounded bg-blue-100">길이: {currentContent.seo_score.contentLength.toLocaleString()}자</div>
                       </div>

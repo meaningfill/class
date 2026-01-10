@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '../../../../services/supabase';
 
 interface Schedule {
   id: number;
@@ -109,16 +109,16 @@ export default function ScheduleSection() {
         {/* Header */}
         <div className={`text-center mb-20 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="inline-block px-6 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-xl rounded-full border border-amber-500/30 mb-6">
-            <span className="text-sm font-semibold text-amber-400 tracking-wider">📅 SCHEDULE</span>
+            <span className="text-sm font-semibold text-amber-400 tracking-wider">?�� SCHEDULE</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight">
             <span className="bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 bg-clip-text text-transparent">
-              개강 일정
+              개강 ?�정
             </span>
           </h2>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-            원하는 시간대와 레벨에 맞는 <strong className="text-amber-400">케이터링 클래스</strong>를 선택하세요<br />
-            소수 정예로 진행되는 <strong className="text-amber-400">맞춤형 교육</strong>을 경험하실 수 있습니다
+            ?�하???�간?�?� ?�벨??맞는 <strong className="text-amber-400">케?�터�??�래??/strong>�??�택?�세??br />
+            ?�수 ?�예�?진행?�는 <strong className="text-amber-400">맞춤??교육</strong>??경험?�실 ???�습?�다
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export default function ScheduleSection() {
                     </h3>
                     <div className="flex items-center gap-2 text-slate-400">
                       <i className="ri-time-line text-amber-400"></i>
-                      <span className="text-sm">{schedule.class.duration_weeks}주 과정</span>
+                      <span className="text-sm">{schedule.class.duration_weeks}�?과정</span>
                     </div>
                   </div>
 
@@ -163,7 +163,7 @@ export default function ScheduleSection() {
                         <i className="ri-calendar-line text-white text-lg"></i>
                       </div>
                       <div>
-                        <div className="text-xs text-slate-500 mb-1">개강일</div>
+                        <div className="text-xs text-slate-500 mb-1">개강??/div>
                         <div className="text-white font-semibold">
                           {new Date(schedule.start_date).toLocaleDateString('ko-KR')}
                         </div>
@@ -175,7 +175,7 @@ export default function ScheduleSection() {
                         <i className="ri-calendar-check-line text-white text-lg"></i>
                       </div>
                       <div>
-                        <div className="text-xs text-slate-500 mb-1">수업 요일</div>
+                        <div className="text-xs text-slate-500 mb-1">?�업 ?�일</div>
                         <div className="text-white font-semibold">{schedule.day_of_week}</div>
                       </div>
                     </div>
@@ -185,7 +185,7 @@ export default function ScheduleSection() {
                         <i className="ri-time-line text-white text-lg"></i>
                       </div>
                       <div>
-                        <div className="text-xs text-slate-500 mb-1">수업 시간</div>
+                        <div className="text-xs text-slate-500 mb-1">?�업 ?�간</div>
                         <div className="text-white font-semibold">{schedule.time}</div>
                       </div>
                     </div>
@@ -194,10 +194,9 @@ export default function ScheduleSection() {
                   {/* Seats Info */}
                   <div className={`p-4 rounded-xl border ${isAlmostFull ? 'bg-orange-500/10 border-orange-500/30' : 'bg-white/5 border-white/10'} mb-6`}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-slate-400">수강 인원</span>
+                      <span className="text-sm text-slate-400">?�강 ?�원</span>
                       <span className={`text-sm font-bold ${isAlmostFull ? 'text-orange-400' : 'text-amber-400'}`}>
-                        {schedule.current_students}/{schedule.max_students}명
-                      </span>
+                        {schedule.current_students}/{schedule.max_students}�?                      </span>
                     </div>
                     <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
                       <div 
@@ -208,7 +207,7 @@ export default function ScheduleSection() {
                     {isAlmostFull && (
                       <div className="mt-2 flex items-center gap-2 text-orange-400 text-xs">
                         <i className="ri-alarm-warning-line"></i>
-                        <span>마감 임박!</span>
+                        <span>마감 ?�박!</span>
                       </div>
                     )}
                   </div>
@@ -216,14 +215,14 @@ export default function ScheduleSection() {
                   {/* Price */}
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-slate-500 mb-1">수강료</div>
+                      <div className="text-xs text-slate-500 mb-1">?�강�?/div>
                       <div className="text-2xl font-black text-white">
                         {schedule.class.price?.toLocaleString()}
-                        <span className="text-base text-slate-400 ml-1">원</span>
+                        <span className="text-base text-slate-400 ml-1">??/span>
                       </div>
                     </div>
                     <button className={`px-6 py-3 bg-gradient-to-r ${levelInfo.gradient} text-white font-bold rounded-xl hover:scale-105 transition-transform duration-300 shadow-lg whitespace-nowrap cursor-pointer`}>
-                      신청하기
+                      ?�청?�기
                     </button>
                   </div>
                 </div>
@@ -238,27 +237,27 @@ export default function ScheduleSection() {
             <div className="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl mx-auto mb-4 shadow-lg">
               <i className="ri-group-line text-2xl text-white"></i>
             </div>
-            <h4 className="text-lg font-bold text-white mb-2">소수 정예</h4>
+            <h4 className="text-lg font-bold text-white mb-2">?�수 ?�예</h4>
             <p className="text-slate-400 text-sm">
-              최대 4명의 소규모 클래스로 집중 교육
+              최�? 4명의 ?�규�??�래?�로 집중 교육
             </p>
           </div>
           <div className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-xl rounded-2xl p-6 border border-white/10 text-center">
             <div className="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl mx-auto mb-4 shadow-lg">
               <i className="ri-calendar-check-line text-2xl text-white"></i>
             </div>
-            <h4 className="text-lg font-bold text-white mb-2">유연한 일정</h4>
+            <h4 className="text-lg font-bold text-white mb-2">?�연???�정</h4>
             <p className="text-slate-400 text-sm">
-              개인 일정에 맞춰 조율 가능한 수업 시간
+              개인 ?�정??맞춰 조율 가?�한 ?�업 ?�간
             </p>
           </div>
           <div className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-xl rounded-2xl p-6 border border-white/10 text-center">
             <div className="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-amber-600 to-orange-600 rounded-xl mx-auto mb-4 shadow-lg">
               <i className="ri-medal-line text-2xl text-white"></i>
             </div>
-            <h4 className="text-lg font-bold text-white mb-2">수료증 발급</h4>
+            <h4 className="text-lg font-bold text-white mb-2">?�료�?발급</h4>
             <p className="text-slate-400 text-sm">
-              과정 수료 시 공식 수료증 제공
+              과정 ?�료 ??공식 ?�료�??�공
             </p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase, BlogPost } from '../../lib/supabase';
+import { supabase, BlogPost } from '../../../services/supabase';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
 
@@ -9,6 +9,17 @@ export default function BlogDetailPage() {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const formatContentHtml = (html: string) => {
+    let formatted = html;
+    if (/<h1\b/i.test(formatted)) {
+      formatted = formatted.replace(/<h1\b/i, '<h2');
+      formatted = formatted.replace(/<\/h1>/i, '</h2>');
+    }
+    formatted = formatted.replace(/\s*\*\s+/g, '<br/>• ');
+    formatted = formatted.replace(/<p><br\/>•/g, '<p>•');
+    return formatted;
+  };
 
   useEffect(() => {
     if (id) {
@@ -19,8 +30,7 @@ export default function BlogDetailPage() {
   useEffect(() => {
     if (post) {
       const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
-      
-      // BlogPosting Schema
+
       const blogPostingSchema = {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
@@ -31,7 +41,7 @@ export default function BlogDetailPage() {
         "dateModified": post.published_at,
         "author": {
           "@type": "Person",
-          "name": post.author
+          "name": "Master"
         },
         "publisher": {
           "@type": "Organization",
@@ -53,9 +63,8 @@ export default function BlogDetailPage() {
       script.text = JSON.stringify(blogPostingSchema);
       document.head.appendChild(script);
 
-      // Update meta tags
       document.title = `${post.title} | Order Builder`;
-      
+
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {
         metaDescription.setAttribute('content', post.excerpt);
@@ -93,7 +102,6 @@ export default function BlogDetailPage() {
       if (error) throw error;
       setPost(data);
 
-      // Fetch related posts
       const { data: related } = await supabase
         .from('blog_posts')
         .select('*')
@@ -103,7 +111,7 @@ export default function BlogDetailPage() {
 
       setRelatedPosts(related || []);
     } catch (error) {
-      console.error('Error fetching blog post:', error);
+      console.error('블로그 글 로드 실패:', error);
     } finally {
       setLoading(false);
     }
@@ -122,7 +130,7 @@ export default function BlogDetailPage() {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <i className="ri-error-warning-line text-6xl text-gray-300 mb-4"></i>
-          <p className="text-xl text-gray-500">포스트를 찾을 수 없습니다</p>
+          <p className="text-xl text-gray-500">포스트를 찾을 수 없습니다.</p>
           <Link to="/blog" className="mt-4 inline-block text-amber-600 hover:underline">
             블로그로 돌아가기
           </Link>
@@ -131,11 +139,12 @@ export default function BlogDetailPage() {
     );
   }
 
+  const formattedContent = formatContentHtml(post.content);
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Hero Section */}
       <section className="relative pt-32 pb-20">
         <div className="absolute inset-0 h-[500px]">
           <img
@@ -150,7 +159,7 @@ export default function BlogDetailPage() {
             <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
               <span className="flex items-center gap-2">
                 <i className="ri-user-line"></i>
-                {post.author}
+                Master
               </span>
               <span className="flex items-center gap-2">
                 <i className="ri-calendar-line"></i>
@@ -167,19 +176,19 @@ export default function BlogDetailPage() {
         </div>
       </section>
 
-      {/* Content Section */}
-      <section className="py-20">
+      <main className="py-20 bg-gradient-to-b from-white via-white to-amber-50/40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="prose prose-lg max-w-none">
-            <div
-              className="text-gray-700 leading-relaxed whitespace-pre-line"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-          </div>
+          <article className="bg-white rounded-3xl border border-amber-100/60 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.45)] p-8 md:p-12">
+            <div className="prose prose-lg md:prose-xl max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-h2:tracking-tight prose-h3:tracking-tight prose-p:text-[17px] prose-p:leading-8 prose-a:text-amber-700 prose-a:font-semibold prose-strong:text-gray-900 prose-li:marker:text-amber-500">
+              <div
+                className="text-gray-800"
+                dangerouslySetInnerHTML={{ __html: formattedContent }}
+              />
+            </div>
+          </article>
         </div>
-      </section>
+      </main>
 
-      {/* Related Posts */}
       {relatedPosts.length > 0 && (
         <section className="py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

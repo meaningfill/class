@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { supabase } from '../../lib/supabase';
+﻿import { useState } from 'react';
+import { supabase } from '../../services/supabase';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminLogin() {
@@ -41,7 +41,7 @@ export default function AdminLogin() {
               <i className="ri-admin-line text-3xl text-white"></i>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">관리자 로그인</h1>
-            <p className="text-gray-600">케이터링 클래스 관리 시스템</p>
+            <p className="text-gray-600">관리자 계정으로 로그인해주세요.</p>
           </div>
 
           {error && (
@@ -53,9 +53,7 @@ export default function AdminLogin() {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                이메일
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">이메일</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <i className="ri-mail-line text-gray-400"></i>
@@ -72,9 +70,7 @@ export default function AdminLogin() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                비밀번호
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">비밀번호</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <i className="ri-lock-line text-gray-400"></i>
@@ -84,7 +80,7 @@ export default function AdminLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
-                  placeholder="••••••••"
+                  placeholder="비밀번호를 입력하세요"
                   required
                 />
               </div>
