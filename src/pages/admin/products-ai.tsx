@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import { useNavigate } from 'react-router-dom';
+import { crawlProduct } from '../../utils/crawler';
 
 const GEMINI_API_KEY = import.meta.env.VITE_API_KEY as string | undefined;
 const GEMINI_MODEL = (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || 'gemini-2.0-flash';
@@ -15,9 +16,29 @@ export default function AdminProductsAI() {
     price: '',
     components: '',
     recommendedEvents: '',
+    inputUrl: '', // URL 입력 필드 추가
   });
   const [generatedData, setGeneratedData] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null); // 에러 메시지 상태 추가
+  const [crawledDetail, setCrawledDetail] = useState<string>(''); // 크롤링된 상세 HTML 저장
   const navigate = useNavigate();
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('로그인이 필요합니다.');
+        navigate('/admin/login');
+      }
+    } catch (error) {
+      console.error('사용자 확인 실패:', error);
+      navigate('/admin/login');
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,9 +53,16 @@ export default function AdminProductsAI() {
   };
 
   const extractJson = (text: string) => {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('JSON 추출 실패');
-    return JSON.parse(match[0]);
+    try {
+      // Markdown code block 제거 (```json ... ```)
+      const cleanText = text.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+      const match = cleanText.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('JSON 형식을 찾을 수 없습니다.');
+      return JSON.parse(match[0]);
+    } catch (e) {
+      console.error('JSON Extraction Failed:', text);
+      throw new Error('AI 응답을 처리하는 중 오류가 발생했습니다. (JSON Parsing Error)');
+    }
   };
 
   const callGeminiJson = async (prompt: string) => {
@@ -67,6 +95,12 @@ export default function AdminProductsAI() {
       }
     }
 
+    // 에러 메시지 구체화
+    const msg = lastError?.message || '알 수 없는 오류';
+    if (msg.includes('403') || msg.includes('API key')) setErrorMsg('Gemini API 키가 만료되었거나 유효하지 않습니다.');
+    else if (msg.includes('JSON')) setErrorMsg('AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요.');
+    else setErrorMsg(msg);
+
     throw lastError || new Error('Gemini 호출 실패');
   };
 
@@ -94,7 +128,8 @@ JSON:
   `.trim();
 
   const handleGenerate = async () => {
-    if (!imageFile || !formData.basicInfo || !formData.price) {
+    // 이미지가 파일로 선택되었거나, 크롤링된 미리보기(URL)가 있어야 함
+    if ((!imageFile && !imagePreview) || !formData.basicInfo || !formData.price) {
       alert('이미지와 기본 정보, 가격을 입력해주세요.');
       return;
     }
@@ -102,17 +137,8 @@ JSON:
     setLoading(true);
 
     try {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('products')
-        .upload(fileName, imageFile);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('products')
-        .getPublicUrl(fileName);
+      // 이미지 업로드는 저장 시점에 수행 (AI 생성 단계에서는 불필요한 업로드 및 RLS 에러 방지)
+      // Gemini에는 텍스트 프롬프트만 전달
 
       let generated;
       if (GEMINI_API_KEY) {
@@ -120,14 +146,14 @@ JSON:
         generated = {
           name: result.name,
           description: result.description,
-          detailedDescription: result.detailed_description,
+          detailedDescription: result.detailed_description + (crawledDetail ? '<br/><br/>' + crawledDetail : ''),
           features: result.features || [],
           components: formData.components.split(',').map((c) => c.trim()).filter((c) => c),
           recommendedEvents: formData.recommendedEvents.split(',').map((e) => e.trim()).filter((e) => e),
           seoTitle: result.seo_title,
           seoDescription: result.seo_description,
           seoKeywords: result.seo_keywords,
-          imageUrl: publicUrl,
+          imageUrl: imagePreview, // 크롤링된 이미지 URL 또는 빈 문자열
           price: parseInt(formData.price, 10),
           eventType: formData.eventType,
         };
@@ -135,23 +161,23 @@ JSON:
         generated = {
           name: generateProductName(formData.basicInfo),
           description: generateDescription(formData.basicInfo),
-          detailedDescription: generateDescription(formData.basicInfo),
+          detailedDescription: generateDescription(formData.basicInfo) + (crawledDetail ? '<br/><br/>' + crawledDetail : ''),
           features: generateFeatures(formData.basicInfo),
           components: formData.components.split(',').map((c) => c.trim()).filter((c) => c),
           recommendedEvents: formData.recommendedEvents.split(',').map((e) => e.trim()).filter((e) => e),
           seoTitle: generateSEOTitle(formData.basicInfo),
           seoDescription: generateSEODescription(formData.basicInfo),
           seoKeywords: generateSEOKeywords(formData.basicInfo),
-          imageUrl: publicUrl,
+          imageUrl: imagePreview, // 크롤링된 이미지 URL 또는 빈 문자열
           price: parseInt(formData.price, 10),
           eventType: formData.eventType,
         };
       }
 
       setGeneratedData(generated);
-    } catch (error) {
+    } catch (error: any) {
       console.error('생성 실패:', error);
-      alert('생성에 실패했습니다.');
+      alert(`생성에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
     } finally {
       setLoading(false);
     }
@@ -160,13 +186,46 @@ JSON:
   const handleSave = async () => {
     if (!generatedData) return;
 
+    // 세션 재확인
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+      navigate('/admin/login');
+      return;
+    }
+
+    if (!imageFile && !generatedData.imageUrl) {
+      alert('이미지가 없습니다. 이미지를 업로드하거나 URL을 가져와주세요.');
+      return;
+    }
+
     setLoading(true);
 
     try {
+      let finalImageUrl = generatedData.imageUrl;
+
+      // 1. 새 이미지가 선택되었다면 업로드
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(fileName, imageFile);
+
+        if (uploadError) throw new Error(`이미지 업로드 실패: ${uploadError.message}`);
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('products')
+          .getPublicUrl(fileName);
+
+        finalImageUrl = publicUrl;
+      }
+
+      // 2. DB 저장
       const { error } = await supabase.from('products').insert({
         name: generatedData.name,
         price: generatedData.price,
-        image_url: generatedData.imageUrl,
+        image_url: finalImageUrl,
         description: generatedData.description,
         detailed_description: generatedData.detailedDescription,
         features: generatedData.features,
@@ -182,9 +241,9 @@ JSON:
 
       alert('상품이 등록되었습니다.');
       navigate('/admin/products');
-    } catch (error) {
+    } catch (error: any) {
       console.error('저장 실패:', error);
-      alert('저장에 실패했습니다.');
+      alert(`저장에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
     } finally {
       setLoading(false);
     }
@@ -267,6 +326,56 @@ JSON:
               <i className="ri-upload-cloud-line text-amber-600"></i>
               상품 정보 입력
             </h2>
+
+            {/* Error Banner */}
+            {errorMsg && (
+              <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-3">
+                <i className="ri-error-warning-fill text-xl"></i>
+                <span className="text-sm font-medium">{errorMsg}</span>
+                <button onClick={() => setErrorMsg(null)} className="ml-auto"><i className="ri-close-line"></i></button>
+              </div>
+            )}
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                참고 URL (자동 크롤링) <span className="text-xs text-pink-500">* 의미있는 웹사이트(Meaningfill 등)</span>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={formData.inputUrl}
+                  onChange={(e) => setFormData({ ...formData, inputUrl: e.target.value })}
+                  placeholder="https://meaningfill.co.kr/product/..."
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!formData.inputUrl) return;
+                    setLoading(true);
+                    setErrorMsg(null);
+                    try {
+                      const data = await crawlProduct(formData.inputUrl);
+                      setFormData(prev => ({
+                        ...prev,
+                        basicInfo: `${data.title}\n${data.description}`,
+                        price: data.price.toString(),
+                        // 이미지 URL은 미리보기용으로 처리 (실제 업로드는 별도)
+                      }));
+                      if (data.imageUrl) setImagePreview(data.imageUrl); // 미리보기만 설정
+                      alert('정보를 성공적으로 가져왔습니다.');
+                    } catch (e: any) {
+                      setErrorMsg(e.message);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 whitespace-nowrap"
+                >
+                  가져오기
+                </button>
+              </div>
+            </div>
 
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">

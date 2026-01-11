@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../services/supabase';
 import { useNavigate } from 'react-router-dom';
 import type { Enrollment } from '../../services/supabase';
+import AdminNavbar from './components/AdminNavbar';
 
 interface EnrollmentWithClass extends Enrollment {
   class_title?: string;
@@ -85,13 +86,11 @@ export default function AdminEnrollments() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AdminNavbar />
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate('/admin/dashboard')} className="text-gray-600 hover:text-gray-900 whitespace-nowrap">
-                <i className="ri-arrow-left-line text-xl"></i>
-              </button>
               <h1 className="text-xl font-bold text-gray-900">수강 신청 관리</h1>
             </div>
           </div>

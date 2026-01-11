@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react';
 import { supabase } from '../../services/supabase';
 import { useNavigate } from 'react-router-dom';
+import AdminNavbar from './components/AdminNavbar';
 
 interface Stats {
   totalClasses: number;
@@ -67,14 +68,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate('/admin/login');
-    } catch (error) {
-      console.error('로그아웃 실패:', error);
-    }
-  };
+
 
   if (loading) {
     return (
@@ -89,28 +83,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
-                <i className="ri-admin-line text-xl text-white"></i>
-              </div>
-              <h1 className="text-xl font-bold text-gray-900">관리자 대시보드</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{user?.email}</span>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 text-sm text-gray-700 hover:text-red-600 transition-colors whitespace-nowrap"
-              >
-                <i className="ri-logout-box-line mr-2"></i>
-                로그아웃
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <AdminNavbar userEmail={user?.email} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -226,7 +199,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </a>
-          
+
           <a
             href="/admin/publish-queue"
             className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-all group"
@@ -313,6 +286,20 @@ export default function AdminDashboard() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">일정 관리</h3>
                 <p className="text-sm text-gray-600">클래스 일정 관리</p>
+              </div>
+            </div>
+          </a>
+          <a
+            href="/admin/newsletter"
+            className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-all group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-pink-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i className="ri-mail-send-line text-2xl text-pink-600"></i>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">뉴스레터 관리</h3>
+                <p className="text-sm text-gray-600">구독자 목록 확인</p>
               </div>
             </div>
           </a>

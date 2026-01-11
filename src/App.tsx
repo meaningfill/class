@@ -3,7 +3,7 @@ import { AppRoutes } from "./router";
 import { I18nextProvider } from "react-i18next";
 import i18n from "./utils/i18n";
 
-const KAKAO_CHAT_URL = "http://pf.kakao.com/_qAhfxj/chat";
+const KAKAO_CHAT_URL = import.meta.env.VITE_KAKAO_CHANNEL_URL || "http://pf.kakao.com/_qAhfxj/chat";
 
 // Base path injected at build time.
 declare const __BASE_PATH__: string;

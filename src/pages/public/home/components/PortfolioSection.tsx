@@ -192,7 +192,7 @@ export default function PortfolioSection() {
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               다양한 케이터링 메뉴를 확인하고<br />
-              원하는 메뉴를 바로 문의하세요.
+              원하는 메뉴를 바로 주문하세요.
             </p>
           </div>
 
@@ -204,22 +204,22 @@ export default function PortfolioSection() {
             ) : productList.length === 0 ? (
               <div className="col-span-full text-center text-gray-500">홈에 노출할 상품이 없습니다.</div>
             ) : (
-              productList.map((product, index) => (
+              productList.slice(0, 6).map((product, index) => (
                 <div
                   key={product.id}
                   className="group relative"
                   style={{ transitionDelay: `${index * 100}ms` }}
                 >
                   <div className="absolute -inset-2 bg-gradient-to-r from-pink-400 to-purple-400 rounded-3xl blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500"></div>
-                  <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-purple-100 group-hover:border-pink-300 transition-all duration-500 shadow-lg">
+                  <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-purple-100 group-hover:border-pink-300 transition-all duration-500 shadow-lg h-full flex flex-col">
                     <div
-                      className="relative w-full h-64 overflow-hidden cursor-pointer"
+                      className="relative w-full h-64 overflow-hidden cursor-pointer flex-shrink-0"
                       onClick={() => handleProductClick(product.id)}
                     >
                       <img
                         src={product.image_url}
                         alt={product.name}
-                        className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700"
+                        className="w-full h-full object-contain bg-white group-hover:scale-110 transition-transform duration-700"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500"></div>
 
@@ -231,27 +231,27 @@ export default function PortfolioSection() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleOrderClick(product);
+                            handleProductClick(product.id);
                           }}
                           className="px-8 py-4 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-sm font-bold rounded-full shadow-2xl shadow-pink-300/50 hover:shadow-pink-300/80 hover:scale-110 transition-all duration-300 whitespace-nowrap cursor-pointer transform translate-y-4 group-hover:translate-y-0"
                         >
                           <i className="ri-shopping-cart-line mr-2"></i>
-                          자세히 보기 · 주문 문의
+                          바로 구매하기
                         </button>
                       </div>
                     </div>
 
                     <div
-                      className="p-6 cursor-pointer"
+                      className="p-6 cursor-pointer flex-grow flex flex-col"
                       onClick={() => handleProductClick(product.id)}
                     >
-                      <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-pink-500 transition-colors">
+                      <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-pink-500 transition-colors line-clamp-2">
                         {product.name}
                       </h3>
                       <p className="text-gray-600 text-sm mb-4 line-clamp-2 group-hover:text-gray-700 transition-colors">
                         {product.description}
                       </p>
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center justify-between text-sm mt-auto">
                         <div className="flex items-center gap-2 text-pink-500 font-bold text-lg">
                           <i className="ri-price-tag-3-line"></i>
                           <span>{product.price.toLocaleString()}원</span>
@@ -271,18 +271,16 @@ export default function PortfolioSection() {
           <div
             className={`text-center transition-all duration-1000 delay-600 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
           >
-            <a
-              href={kakaoChatUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => navigate('/portfolio')}
               className="inline-block group relative px-12 py-5 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-300 shadow-2xl shadow-pink-300/50 hover:shadow-pink-300/80 hover:scale-105 whitespace-nowrap cursor-pointer"
             >
               <span className="relative z-10 flex items-center gap-3">
-                전체 메뉴 보러가기
+                더 많은 상품 보러가기
                 <i className="ri-arrow-right-line text-xl group-hover:translate-x-2 transition-transform"></i>
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            </a>
+            </button>
           </div>
         </div>
       </section>

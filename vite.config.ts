@@ -79,5 +79,12 @@ export default defineConfig({
   server: {
     port: 3000,
     host: "0.0.0.0",
+    proxy: {
+      '/api/ciderpay': {
+        target: 'https://api.ciderpay.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/ciderpay/, ''),
+      },
+    },
   },
 });

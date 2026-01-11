@@ -145,7 +145,7 @@ export default function BlogDetailPage() {
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      <section className="relative pt-32 pb-20">
+      <section className="relative mt-20 pt-40 pb-20">
         <div className="absolute inset-0 h-[500px]">
           <img
             src={post.image_url}
@@ -184,6 +184,17 @@ export default function BlogDetailPage() {
                 className="text-gray-800"
                 dangerouslySetInnerHTML={{ __html: formattedContent }}
               />
+            </div>
+            <div className="mt-12 flex justify-center">
+              <a
+                href={import.meta.env.VITE_KAKAO_CHANNEL_URL || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-[#FEE500] text-slate-900 rounded-xl font-bold text-lg hover:bg-[#FDD835] transition-colors shadow-sm hover:shadow-md"
+              >
+                <i className="ri-kakao-talk-fill text-xl"></i>
+                클래스 및 케이터링문의
+              </a>
             </div>
           </article>
         </div>

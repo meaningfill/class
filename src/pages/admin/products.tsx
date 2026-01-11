@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../services/supabase';
 import { useNavigate } from 'react-router-dom';
-import type { Product } from '../../services/supabase';
+import { Product } from '../../services/supabase';
+import AdminNavbar from './components/AdminNavbar';
 import { products as mockProducts } from '../../utils/mocks/products';
 
 const GEMINI_API_KEY = import.meta.env.VITE_API_KEY as string | undefined;
@@ -219,9 +220,17 @@ export default function AdminProducts() {
       let parsedOptions: { name: string; values: string[] }[] | null = null;
       if (formData.options.trim()) {
         try {
-          parsedOptions = JSON.parse(formData.options);
+          const rawOptions = JSON.parse(formData.options);
+          if (Array.isArray(rawOptions)) {
+            parsedOptions = rawOptions.map((opt: any) => ({
+              name: (opt.name || '').trim(),
+              values: Array.isArray(opt.values)
+                ? opt.values.map((v: string) => String(v).trim()).filter((v: string) => v)
+                : []
+            })).filter((opt: any) => opt.name); // 이름이 없는 옵션은 제외
+          }
         } catch {
-          alert('옵션 JSON 형식이 올바르지 않습니다.');
+          alert('옵션 데이터 형식이 올바르지 않습니다.');
           setSaving(false);
           return;
         }
@@ -391,16 +400,11 @@ export default function AdminProducts() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AdminNavbar />
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/admin/dashboard')}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <i className="ri-arrow-left-line text-xl"></i>
-              </button>
               <h1 className="text-xl font-bold text-gray-900">케이터링 주문 상품 관리</h1>
             </div>
             <div className="flex items-center gap-2">
@@ -417,6 +421,35 @@ export default function AdminProducts() {
               >
                 <i className="ri-robot-line mr-2"></i>
                 AI 상품 자동 생성
+              </button>
+              <button
+                onClick={() => {
+                  setEditingProduct(null);
+                  setFormData({
+                    name: '',
+                    price: 0,
+                    description: '',
+                    detailed_description: '',
+                    image_url: '',
+                    event_type: '케이터링',
+                    features: '',
+                    ingredients: '',
+                    suitable_for: '',
+                    components: '',
+                    recommended_events: '',
+                    options: '',
+                    seo_title: '',
+                    seo_description: '',
+                    seo_keywords: '',
+                    show_on_home: true,
+                    home_order: null,
+                  });
+                  setShowModal(true);
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 whitespace-nowrap font-semibold text-sm"
+              >
+                <i className="ri-add-line"></i>
+                상품 등록
               </button>
             </div>
           </div>
@@ -459,11 +492,11 @@ export default function AdminProducts() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
               <div key={product.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
-                <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                <div className="aspect-[4/3] w-full overflow-hidden bg-white">
                   <img
                     src={product.image_url}
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <div className="p-6">
@@ -652,14 +685,99 @@ export default function AdminProducts() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">옵션(JSON)</label>
-                <textarea
-                  value={formData.options}
-                  onChange={(e) => setFormData({ ...formData, options: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-mono text-xs"
-                  rows={4}
-                  placeholder='[{"name":"옵션명","values":["옵션1","옵션2"]}]'
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">옵션 설정</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      let current = [];
+                      try {
+                        current = formData.options ? JSON.parse(formData.options) : [];
+                        if (!Array.isArray(current)) current = [];
+                      } catch {
+                        current = [];
+                      }
+                      const updated = [...current, { name: '', values: [] }];
+                      setFormData({ ...formData, options: JSON.stringify(updated) });
+                    }}
+                    className="text-xs px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors font-medium flex items-center gap-1"
+                  >
+                    <i className="ri-add-line"></i>
+                    옵션 추가
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {(() => {
+                    let optionsArray = [];
+                    try {
+                      optionsArray = formData.options ? JSON.parse(formData.options) : [];
+                      if (!Array.isArray(optionsArray)) optionsArray = [];
+                    } catch {
+                      optionsArray = [];
+                    }
+
+                    if (optionsArray.length === 0) {
+                      return (
+                        <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                          <p className="text-sm text-gray-500">등록된 옵션이 없습니다.</p>
+                          <p className="text-xs text-gray-400 mt-1">사이즈, 색상 등의 옵션을 추가해보세요.</p>
+                        </div>
+                      );
+                    }
+
+                    return optionsArray.map((opt: any, idx: number) => (
+                      <div key={idx} className="p-4 bg-white rounded-xl border border-gray-200 shadow-sm relative group">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = optionsArray.filter((_, i) => i !== idx);
+                            setFormData({ ...formData, options: JSON.stringify(updated) });
+                          }}
+                          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                          title="옵션 삭제"
+                        >
+                          <i className="ri-delete-bin-line"></i>
+                        </button>
+                        <div className="grid md:grid-cols-2 gap-4 mt-1">
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">옵션명</label>
+                            <input
+                              type="text"
+                              value={opt.name}
+                              onChange={(e) => {
+                                const updated = [...optionsArray];
+                                updated[idx].name = e.target.value;
+                                setFormData({ ...formData, options: JSON.stringify(updated) });
+                              }}
+                              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm"
+                              placeholder="예: 사이즈"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">옵션값 (쉼표로 구분)</label>
+                            <input
+                              type="text"
+                              value={Array.isArray(opt.values) ? opt.values.join(',') : ''}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                const updated = [...optionsArray];
+                                // 콤마로 분리하되 빈 값도 유지하여 입력 중 끊김 방지
+                                updated[idx].values = val.split(',');
+                                setFormData({ ...formData, options: JSON.stringify(updated) });
+                              }}
+                              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm"
+                              placeholder="예: S,M,L"
+                            />
+                            <p className="text-[10px] text-gray-400 mt-1 pl-1">
+                              현재 값: {Array.isArray(opt.values) ? opt.values.filter((v: string) => v.trim()).join(', ') : ''}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">

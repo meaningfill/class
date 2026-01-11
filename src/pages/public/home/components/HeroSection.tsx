@@ -1,26 +1,44 @@
-﻿import { useEffect, useRef, useState } from 'react';
+﻿import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Canvas } from '@react-three/fiber';
+import { Environment } from '@react-three/drei';
+import FloatingFoods from '@/components/3d/FloatingFoods';
+import MagneticParticles from '@/components/3d/MagneticParticles';
+import { supabase } from '@/services/supabase';
 
 export default function HeroSection() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [count, setCount] = useState(0);
-  const heroRef = useRef<HTMLDivElement>(null);
+  const [email, setEmail] = useState('');
   const navigate = useNavigate();
-  const kakaoChannelUrl = import.meta.env.VITE_KAKAO_CHANNEL_URL as string | undefined;
+  const kakaoChannelUrl = import.meta.env.VITE_KAKAO_CHANNEL_URL || 'https://pf.kakao.com';
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (heroRef.current) {
-        const rect = heroRef.current.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width - 0.5;
-        const y = (e.clientY - rect.top) / rect.height - 0.5;
-        setMousePosition({ x, y });
+  const handleSubscribe = async () => {
+    if (!email || !email.includes('@')) {
+      alert('올바른 이메일 주소를 입력해주세요.');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('newsletter_subscriptions')
+        .insert([{ email, created_at: new Date().toISOString() }]);
+
+      if (error) {
+        // Postgres unique violation code
+        if (error.code === '23505') {
+          alert('이미 등록된 이메일입니다.');
+          return;
+        }
+        throw error;
       }
-    };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+      alert('뉴스레터 구독이 완료되었습니다!');
+      setEmail('');
+    } catch (error) {
+      console.error('Subscription error:', error);
+      alert('구독 신청 중 오류가 발생했습니다.');
+    }
+  };
 
   useEffect(() => {
     const duration = 2000;
@@ -59,85 +77,30 @@ export default function HeroSection() {
   return (
     <section
       id="hero"
-      ref={heroRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-100 via-purple-50 to-green-50"
+      className="relative h-[85vh] min-h-[700px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-50 via-white to-purple-50"
     >
-      {/* Floating Cloud Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Large Cloud - Top Right */}
-        <div
-          className="absolute top-20 right-10 w-96 h-64 opacity-40"
-          style={{
-            transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px)`,
-            transition: 'transform 0.3s ease-out',
-          }}
-        >
-          <div className="relative w-full h-full">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-white rounded-full blur-2xl"></div>
-            <div className="absolute top-8 left-1/4 w-40 h-40 bg-white rounded-full blur-2xl"></div>
-            <div className="absolute top-8 right-1/4 w-36 h-36 bg-white rounded-full blur-2xl"></div>
-            <div className="absolute top-16 left-1/2 -translate-x-1/2 w-48 h-32 bg-white rounded-full blur-2xl"></div>
-          </div>
-        </div>
+      {/* R3F Canvas Background */}
+      <div className="absolute inset-0 z-0">
+        <Canvas camera={{ position: [0, 0, 10], fov: 50 }} eventSource={document.body} eventPrefix="client">
+          <ambientLight intensity={0.5} />
+          <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
+          <pointLight position={[-10, -10, -10]} intensity={1} />
 
-        {/* Medium Cloud - Left */}
-        <div
-          className="absolute top-1/3 left-10 w-72 h-48 opacity-30"
-          style={{
-            transform: `translate(${mousePosition.x * -20}px, ${mousePosition.y * 20}px)`,
-            transition: 'transform 0.3s ease-out',
-          }}
-        >
-          <div className="relative w-full h-full">
-            <div className="absolute top-0 left-1/3 w-24 h-24 bg-white rounded-full blur-xl"></div>
-            <div className="absolute top-4 left-1/2 w-32 h-32 bg-white rounded-full blur-xl"></div>
-            <div className="absolute top-8 left-1/4 w-36 h-24 bg-white rounded-full blur-xl"></div>
-          </div>
-        </div>
+          <FloatingFoods />
+          <MagneticParticles count={80} />
 
-        {/* Heart Elements */}
-        <div
-          className="absolute top-32 right-1/4 text-6xl opacity-60"
-          style={{
-            transform: `translate(${mousePosition.x * 40}px, ${mousePosition.y * -30}px) rotate(15deg)`,
-            transition: 'transform 0.3s ease-out',
-            filter: 'drop-shadow(0 10px 20px rgba(255, 182, 193, 0.3))',
-          }}
-        >
-          <div className="w-16 h-16 bg-gradient-to-br from-pink-300 to-pink-200 rounded-full blur-sm"></div>
-        </div>
-
-        {/* Decorative Circles */}
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-gradient-to-br from-purple-200/30 to-pink-200/30 blur-xl"
-            style={{
-              width: `${Math.random() * 150 + 80}px`,
-              height: `${Math.random() * 150 + 80}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float ${Math.random() * 15 + 10}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 5}s`,
-              transform: `translate(${mousePosition.x * (i * 3)}px, ${mousePosition.y * (i * 3)}px)`,
-            }}
-          ></div>
-        ))}
+          <Environment preset="city" />
+        </Canvas>
       </div>
 
       {/* Content Wrapper - Centered */}
-      <div className="relative z-10 w-full px-4 py-20">
+      <div className="relative z-10 w-full px-4 py-20 pointer-events-none">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-center pointer-events-auto">
             {/* Left Content */}
             <div className="text-left">
               {/* Title */}
-              <h1
-                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 leading-relaxed tracking-normal max-w-[48ch]"
-                style={{
-                  transform: `translateZ(${mousePosition.y * 50}px)`,
-                }}
-              >
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 leading-relaxed tracking-normal max-w-[48ch]">
                 <span className="block mb-2 break-words text-xl sm:text-2xl md:text-3xl lg:text-4xl">
                   단순한 레시피가 아니라
                 </span>
@@ -150,12 +113,7 @@ export default function HeroSection() {
               </h1>
 
               {/* Description */}
-              <p
-                className="text-base md:text-lg text-gray-600 mb-10 leading-relaxed font-normal max-w-prose"
-                style={{
-                  transform: `translateY(${mousePosition.y * 5}px)`,
-                }}
-              >
+              <p className="text-base md:text-lg text-gray-600 mb-10 leading-relaxed font-normal max-w-prose">
                 단품 판매의 한계를 넘어 대량 주문을 안정적으로 소화하고 싶으신가요?
                 <br />
                 <span className="inline-block mt-4">
@@ -170,15 +128,10 @@ export default function HeroSection() {
               </p>
 
               {/* Action Buttons */}
-              <div
-                className="flex flex-col sm:flex-row items-start gap-4 mb-16"
-                style={{
-                  transform: `translateY(${mousePosition.y * -5}px)`,
-                }}
-              >
+              <div className="flex flex-col sm:flex-row items-start gap-4 mb-16">
                 <button
                   onClick={handleEducationConsult}
-                  className="group relative w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-300 shadow-lg shadow-pink-300/50 hover:shadow-pink-400/60 hover:scale-105 whitespace-nowrap cursor-pointer"
+                  className="group relative w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-300 shadow-lg shadow-pink-300/50 hover:shadow-pink-400/60 hover:scale-105 whitespace-nowrap cursor-pointer pointer-events-auto"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-3">
                     교육 상담 신청
@@ -188,7 +141,7 @@ export default function HeroSection() {
                 </button>
                 <button
                   onClick={() => navigate('/classes')}
-                  className="group w-full sm:w-auto px-10 py-4 bg-white/80 backdrop-blur-xl text-gray-700 text-lg font-bold rounded-full transition-all duration-300 border-2 border-purple-200 hover:border-pink-300 hover:bg-white whitespace-nowrap cursor-pointer"
+                  className="group w-full sm:w-auto px-10 py-4 bg-white/80 backdrop-blur-xl text-gray-700 text-lg font-bold rounded-full transition-all duration-300 border-2 border-purple-200 hover:border-pink-300 hover:bg-white whitespace-nowrap cursor-pointer pointer-events-auto"
                 >
                   <span className="flex items-center justify-center gap-3">
                     커리큘럼 살펴보기
@@ -196,12 +149,42 @@ export default function HeroSection() {
                   </span>
                 </button>
               </div>
+
+              {/* Newsletter Block */}
+              <div className="mt-8 p-6 bg-white/60 backdrop-blur-md border border-purple-100 rounded-2xl shadow-lg max-w-lg pointer-events-auto">
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <div className="text-sm text-gray-700 font-medium whitespace-nowrap">
+                    최신소식과 특별혜택을<br />
+                    이메일로 받아보세요
+                  </div>
+                  <div className="relative w-full">
+                    <input
+                      type="email"
+                      placeholder="이메일 주소"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-purple-100 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:border-pink-300 transition-colors text-sm"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSubscribe();
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={handleSubscribe}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-gradient-to-r from-pink-400 to-purple-400 rounded-lg hover:scale-110 transition-transform cursor-pointer"
+                    >
+                      <i className="ri-arrow-right-line text-white text-sm"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Right Content - Stats */}
             <div className="space-y-6">
               {/* Large Counter Card */}
-              <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-12 border border-purple-100 shadow-2xl text-center">
+              <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-12 border border-purple-100 shadow-2xl text-center pointer-events-auto">
                 <div className="mb-4">
                   <div className="text-7xl md:text-8xl font-black bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
                     {count}
@@ -212,7 +195,7 @@ export default function HeroSection() {
               </div>
 
               {/* Small Stats Grid */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-4 pointer-events-auto">
                 <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100 text-center shadow-lg">
                   <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center">
                     <i className="ri-user-heart-line text-2xl text-white"></i>
@@ -241,18 +224,11 @@ export default function HeroSection() {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce pointer-events-none">
         <div className="w-10 h-16 border-2 border-pink-300 rounded-full flex items-start justify-center p-2 backdrop-blur-sm bg-white/30">
           <div className="w-2 h-4 bg-gradient-to-b from-pink-400 to-purple-400 rounded-full animate-pulse"></div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-30px) rotate(5deg); }
-        }
-      `}</style>
     </section>
   );
 }

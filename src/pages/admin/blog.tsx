@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
 import type { BlogPost } from '../../services/supabase';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import AdminNavbar from './components/AdminNavbar';
 
 const GEMINI_API_KEY = import.meta.env.VITE_API_KEY as string | undefined;
 const GEMINI_MODEL = (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || 'gemini-2.0-flash';
@@ -25,6 +28,8 @@ export default function AdminBlog() {
     image_url: '',
     author: 'Master',
     published_at: new Date().toISOString().split('T')[0],
+    reference_url: '',
+    reference_content: '',
   });
 
   useEffect(() => {
@@ -115,23 +120,28 @@ export default function AdminBlog() {
     };
   };
 
-  const buildRewritePrompt = (title: string, excerpt: string) => `
+  const buildRewritePrompt = (title: string, excerpt: string, refUrl: string, refContent: string) => `
 너는 케이터링/요식업 전문 블로그 에디터다.
 
-아래 제목을 유지하고 본문만 새로 작성해.
+아래 제목과 참고 자료를 바탕으로 본문을 작성해.
 - 최소 ${MIN_CONTENT_CHARS}자 이상
 - 한국어
-- 중복 없는 새로운 내용
+- 팩트 기반의 유익한 정보 포함
 - JSON만 출력
 
 제목: ${title}
 기존 요약: ${excerpt}
+참고 URL: ${refUrl}
+참고 내용: ${refContent}
 
-HTML 스타일
+HTML 스타일 (Tailwind CSS):
 h1: class="text-3xl font-bold text-gray-900 mb-6"
 h2: class="text-2xl font-bold text-gray-800 mt-10 mb-4 border-b-2 border-purple-500 pb-2"
 h3: class="text-xl font-semibold text-gray-800 mt-6 mb-3"
 p: class="text-base text-gray-700 leading-relaxed mb-4"
+ul/ol: class="list-disc list-inside space-y-2 mb-6 ml-4 text-gray-700"
+blockquote: class="border-l-4 border-purple-400 pl-4 py-2 my-4 bg-purple-50 italic text-gray-700"
+img: class="rounded-xl shadow-lg my-6 w-full object-cover max-h-[500px]"
 
 JSON:
 {
@@ -139,12 +149,25 @@ JSON:
 }
   `.trim();
 
+  // Quill Modules for Image Handling (Standard)
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['link', 'image'],
+      ['clean']
+    ],
+  };
+
   const handleRegenerateToQueue = async (post: BlogPost) => {
     if (regeneratingId) return;
     setRegeneratingId(post.id);
 
     try {
-      const result = await callGeminiJson(buildRewritePrompt(post.title, post.excerpt));
+      const result = await callGeminiJson(buildRewritePrompt(post.title, post.excerpt, '', '')); // Regenerate mode doesn't have ref yet
+      // For now, simplify or pass default. Existing regeneration logic just rewrites based on title.
+      // Or pass empty string if user didn't provide new refs.
       const contentHtml = result.content_html || '';
       const contentLength = stripHtml(contentHtml).length;
       if (contentLength < MIN_CONTENT_CHARS) {
@@ -286,6 +309,8 @@ JSON:
       image_url: post.image_url,
       author: 'Master',
       published_at: post.published_at.split('T')[0],
+      reference_url: '',
+      reference_content: '',
     });
     setImagePreview(post.image_url);
     setImageFile(null);
@@ -300,6 +325,8 @@ JSON:
       image_url: '',
       author: 'Master',
       published_at: new Date().toISOString().split('T')[0],
+      reference_url: '',
+      reference_content: '',
     });
     setImageFile(null);
     setImagePreview('');
@@ -315,6 +342,7 @@ JSON:
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AdminNavbar />
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -431,13 +459,39 @@ JSON:
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">내용</label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  rows={12}
-                  required
-                />
+                <div className="bg-white rounded-lg overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-amber-500 focus-within:border-transparent">
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.content}
+                    onChange={(content) => setFormData({ ...formData, content })}
+                    modules={modules}
+                    className="h-96"
+                  />
+                </div>
+              </div>
+              <div className="pt-12"> {/* Quill Toolbar Spacing Fix */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">참고 URL (AI 생성용)</label>
+                    <input
+                      type="text"
+                      value={(formData as any).reference_url}
+                      onChange={(e) => setFormData({ ...formData, reference_url: e.target.value } as any)}
+                      placeholder="https://..."
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">참고 텍스트/메모</label>
+                    <input
+                      type="text"
+                      value={(formData as any).reference_content}
+                      onChange={(e) => setFormData({ ...formData, reference_content: e.target.value } as any)}
+                      placeholder="AI에게 전달할 핵심 내용"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

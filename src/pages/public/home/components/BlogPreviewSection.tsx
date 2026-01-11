@@ -34,12 +34,11 @@ export default function BlogPreviewSection() {
     <section id="blog" className="relative py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-sm font-bold tracking-[0.35em] text-slate-300">INSIGHTS</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-900">
-            블로그에서 최신 인사이트를 확인하세요
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 inline-block border-b-4 border-pink-400 pb-2">
+            블로그
           </h2>
-          <p className="mt-4 text-base text-slate-500">
-            케이터링 창업과 운영 인사이트를 빠르게 전합니다.
+          <p className="mt-6 text-base text-slate-500">
+            케이터링과 요리에 관한 실용적인 정보를 공유합니다.
           </p>
         </div>
 

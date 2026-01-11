@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { CiderPayButton } from '../../../components/payment/PaymentButton';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
 import { supabase } from '../../../services/supabase';
 import type { Product } from '../../../services/supabase';
+import { sendEmailNotification } from '../../../services/email';
 
 const MIN_ORDER_QUANTITY = 30;
 
@@ -14,6 +16,7 @@ export default function ProductDetailPage() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [orderMode, setOrderMode] = useState<'inquiry' | 'order'>('inquiry');
   const [quantity, setQuantity] = useState(MIN_ORDER_QUANTITY);
   const [formData, setFormData] = useState({
     name: '',
@@ -154,7 +157,8 @@ export default function ProductDetailPage() {
   const detailedDescription = product.detailed_description || product.description;
   const totalPrice = product.price * quantity;
 
-  const handleOrderClick = () => {
+  const handleOrderClick = (mode: 'inquiry' | 'order') => {
+    setOrderMode(mode);
     setFormData(prev => ({
       ...prev,
       selectedMenu: product.name,
@@ -192,42 +196,77 @@ export default function ProductDetailPage() {
     setSubmitStatus('idle');
 
     try {
-      const formBody = new URLSearchParams();
-      Object.entries(formData).forEach(([key, value]) => {
-        formBody.append(key, value);
+      const { error } = await supabase
+        .from('inquiries')
+        .insert([
+          {
+            inquiry_type: orderMode === 'order' ? 'product_order' : 'product_inquiry',
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            content: {
+              productId: product?.id,
+              productName: product?.name,
+              eventType: formData.eventType,
+              eventDate: formData.eventDate,
+              guestCount: formData.guestCount,
+              selectedMenu: formData.selectedMenu,
+              quantity: formData.quantity,
+              budget: formData.budget,
+              message: formData.message
+            }
+          }
+        ]);
+
+      if (error) throw error;
+
+      // Send Email Notification
+      const emailContent = `
+        [${orderMode === 'order' ? '상품 주문' : '상품 문의'}]
+        - 상품명: ${product?.name}
+        - 행사유형: ${formData.eventType}
+        - 행사날짜: ${formData.eventDate}
+        - 예상인원: ${formData.guestCount}
+        - 수량: ${formData.quantity}
+        - 예산: ${formData.budget}
+        - 요청사항: ${formData.message}
+      `;
+
+      sendEmailNotification({
+        type: orderMode === 'order' ? '상품 주문' : '상품 문의',
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        content: emailContent
       });
 
-      const response = await fetch('https://readdy.ai/api/form/d5bpludcrgmf5papdh40', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formBody.toString()
-      });
+      setSubmitStatus('success');
 
-      if (response.ok) {
-        setSubmitStatus('success');
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          eventType: '',
-          eventDate: '',
-          guestCount: '',
-          selectedMenu: '',
-          quantity: MIN_ORDER_QUANTITY.toString(),
-          budget: '',
-          message: ''
-        });
-        setQuantity(MIN_ORDER_QUANTITY);
-        setTimeout(() => {
-          closeModal();
-        }, 2000);
+      // Show success message as popup based on mode
+      if (orderMode === 'order') {
+        alert('입력하신 연락처로 결제링크가 전달되니 결제를 완료해주세요.\n(미결제 시 주문이 처리되지 않습니다.)');
       } else {
-        setSubmitStatus('error');
+        alert('확인 후 담당 매니저가 빠르게 연락드립니다.');
       }
+
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        eventType: '',
+        eventDate: '',
+        guestCount: '',
+        selectedMenu: '',
+        quantity: MIN_ORDER_QUANTITY.toString(),
+        budget: '',
+        message: ''
+      });
+      setQuantity(MIN_ORDER_QUANTITY);
+      closeModal();
     } catch (error) {
+      console.error('Error submitting product inquiry:', error);
       setSubmitStatus('error');
+      alert('문의 접수 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -325,19 +364,27 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={handleOrderClick}
-                  className="w-full py-5 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-2xl shadow-2xl shadow-pink-300/50 hover:shadow-pink-300/80 hover:scale-105 transition-all duration-300 whitespace-nowrap cursor-pointer"
-                >
-                  <i className="ri-shopping-cart-line mr-2"></i>
-                  주문 문의하기
-                </button>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => handleOrderClick('inquiry')}
+                    className="flex-1 py-5 bg-white border-2 border-pink-400 text-pink-500 text-lg font-bold rounded-2xl shadow-lg hover:shadow-pink-200 hover:bg-pink-50 transition-all duration-300 whitespace-nowrap cursor-pointer"
+                  >
+                    문의하기
+                  </button>
+                  <button
+                    onClick={() => handleOrderClick('order')}
+                    className="flex-1 py-5 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-2xl shadow-lg shadow-pink-300/50 hover:shadow-pink-300/80 hover:scale-105 transition-all duration-300 whitespace-nowrap cursor-pointer"
+                  >
+                    주문하기
+                  </button>
+                </div>
 
                 <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-purple-100">
                   <h2 className="text-2xl font-bold text-gray-800 mb-4">상품 설명</h2>
-                  <p className="text-gray-600 leading-relaxed">
-                    {detailedDescription}
-                  </p>
+                  <div
+                    className="text-gray-600 leading-relaxed whitespace-pre-wrap prose prose-pink max-w-none"
+                    dangerouslySetInnerHTML={{ __html: detailedDescription }}
+                  />
                 </div>
 
                 <div className="bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl p-8 border border-pink-200">
@@ -612,13 +659,15 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-4 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-base font-semibold rounded-lg hover:shadow-lg hover:shadow-pink-300/50 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer"
-                >
-                  {isSubmitting ? '전송 중...' : '주문 문의하기'}
-                </button>
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-4 bg-gray-100 text-gray-700 text-base font-semibold rounded-lg hover:bg-gray-200 transition-all duration-300 disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                  >
+                    {isSubmitting ? '전송 중...' : (orderMode === 'order' ? '주문 접수하기' : '이 구성 문의하기')}
+                  </button>
+                </div>
 
                 {submitStatus === 'success' && (
                   <div className="p-4 bg-green-100 border border-green-300 rounded-lg text-center">

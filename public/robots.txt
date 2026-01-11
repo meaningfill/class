@@ -1,9 +1,3 @@
 User-agent: *
 Allow: /
-Allow: /classes
-Allow: /portfolio
-Allow: /blog
-Disallow: /admin
-Disallow: /admin/*
-
-Sitemap: https://example.com/sitemap.xml
+Sitemap: https://class-one.vercel.app/sitemap.xml

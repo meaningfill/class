@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/ciderpay/:path*",
+            "destination": "https://api.ciderpay.com/:path*"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}

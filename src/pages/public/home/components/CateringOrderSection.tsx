@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { supabase } from '../../../../services/supabase';
+import { sendEmailNotification } from '../../../../services/email';
 
 export default function CateringOrderSection() {
   const [formData, setFormData] = useState({
@@ -23,7 +25,7 @@ export default function CateringOrderSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.name || !formData.email || !formData.phone || !formData.eventType) {
       alert('필수 항목을 모두 입력해주세요.');
@@ -39,36 +41,60 @@ export default function CateringOrderSection() {
     setSubmitStatus('idle');
 
     try {
-      const formBody = new URLSearchParams();
-      Object.entries(formData).forEach(([key, value]) => {
-        formBody.append(key, value);
+      const { error } = await supabase
+        .from('inquiries')
+        .insert([
+          {
+            inquiry_type: 'catering',
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            content: {
+              eventType: formData.eventType,
+              eventDate: formData.eventDate,
+              guestCount: formData.guestCount,
+              menuPreference: formData.menuPreference,
+              budget: formData.budget,
+              message: formData.message
+            }
+          }
+        ]);
+
+      if (error) throw error;
+
+      // Send Email Notification
+      const emailContent = `
+        [케이터링 주문 문의]
+        - 행사유형: ${formData.eventType}
+        - 행사날짜: ${formData.eventDate}
+        - 예상인원: ${formData.guestCount}
+        - 메뉴선호: ${formData.menuPreference}
+        - 예산: ${formData.budget}
+        - 추가요청: ${formData.message}
+      `;
+
+      sendEmailNotification({
+        type: '케이터링 주문',
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        content: emailContent
       });
 
-      const response = await fetch('https://readdy.ai/api/form/d5bkc6kf78kfudd4k72g', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formBody.toString()
+      setSubmitStatus('success');
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        eventType: '',
+        eventDate: '',
+        guestCount: '',
+        menuPreference: '',
+        budget: '',
+        message: ''
       });
-
-      if (response.ok) {
-        setSubmitStatus('success');
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          eventType: '',
-          eventDate: '',
-          guestCount: '',
-          menuPreference: '',
-          budget: '',
-          message: ''
-        });
-      } else {
-        setSubmitStatus('error');
-      }
     } catch (error) {
+      console.error('Error submitting catering order:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -280,7 +306,7 @@ export default function CateringOrderSection() {
           {/* Info */}
           <div className="space-y-8">
             <div className="w-full h-[300px]">
-              <img 
+              <img
                 src="https://readdy.ai/api/search-image?query=professional%20catering%20service%20setup%20with%20elegant%20sandwich%20platters%20and%20finger%20foods%20on%20white%20serving%20tables%2C%20business%20catering%20presentation%20with%20professional%20staff%20in%20background%2C%20clean%20white%20background%20with%20bright%20natural%20lighting%2C%20high-end%20event%20catering%20display&width=600&height=300&seq=order-img-001&orientation=landscape"
                 alt="케이터링 서비스"
                 title="케이터링 주문 서비스"
