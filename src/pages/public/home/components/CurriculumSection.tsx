@@ -50,21 +50,21 @@ export default function CurriculumSection() {
   ];
 
   return (
-    <section 
+    <section
       ref={sectionRef}
-      id="curriculum" 
+      id="curriculum"
       className="relative py-20 sm:py-32 bg-gradient-to-br from-pink-50/30 via-purple-50/30 to-pink-50/30 overflow-hidden"
     >
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6 break-keep">
             Order Builder가 제안하는<br />
             <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
               실질적인 창업 로드맵
             </span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed break-keep">
             교육 이후 스스로 비즈니스를 확장할 수 있는 기초 체력을 갖춰드립니다.
           </p>
         </div>
@@ -74,9 +74,8 @@ export default function CurriculumSection() {
           {curriculumItems.map((item, index) => (
             <div
               key={index}
-              className={`group relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-gray-100 hover:border-pink-200 transition-all duration-500 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              className={`group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-gray-100 hover:border-pink-200 transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
               style={{
                 transitionDelay: `${index * 0.1}s`
               }}
@@ -96,7 +95,7 @@ export default function CurriculumSection() {
                 <h3 className="text-2xl font-bold text-gray-800 mb-4">
                   {item.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 leading-relaxed break-keep">
                   {item.description}
                 </p>
               </div>

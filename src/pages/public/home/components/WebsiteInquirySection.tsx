@@ -72,11 +72,11 @@ export default function WebsiteInquirySection() {
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
                     {/* Text Content */}
                     <div className="text-center lg:text-left">
-                        <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-6 leading-tight">
+                        <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-6 leading-tight break-keep">
                             나만의 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">웹사이트</span>를<br />
                             만들어 보세요
                         </h2>
-                        <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0">
+                        <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0 break-keep">
                             비즈니스의 시작, 전문적인 웹사이트 제작으로 함께합니다.<br />
                             고객님의 니즈를 파악하여 최상의 퀄리티를 약속드립니다.
                         </p>
@@ -103,7 +103,7 @@ export default function WebsiteInquirySection() {
                     </div>
 
                     {/* Form */}
-                    <div className="bg-white rounded-3xl p-8 shadow-xl border border-white/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-white/50 backdrop-blur-sm">
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">이름 (담당자)</label>

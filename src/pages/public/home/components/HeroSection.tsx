@@ -77,7 +77,7 @@ export default function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative h-[85vh] min-h-[700px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-50 via-white to-purple-50"
+      className="relative min-h-[85vh] h-auto flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-50 via-white to-purple-50"
     >
       {/* R3F Canvas Background */}
       <div className="absolute inset-0 z-0">
@@ -96,12 +96,12 @@ export default function HeroSection() {
       {/* Content Wrapper - Centered */}
       <div className="relative z-10 w-full px-4 py-20 pointer-events-none">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center pointer-events-auto">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center pointer-events-auto">
             {/* Left Content */}
             <div className="text-left">
               {/* Title */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 leading-relaxed tracking-normal max-w-[48ch]">
-                <span className="block mb-2 break-words text-xl sm:text-2xl md:text-3xl lg:text-4xl">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 leading-relaxed tracking-normal max-w-[48ch] break-keep">
+                <span className="block mb-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl">
                   단순한 레시피가 아니라
                 </span>
                 <span className="block bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 bg-clip-text text-transparent font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
@@ -113,15 +113,15 @@ export default function HeroSection() {
               </h1>
 
               {/* Description */}
-              <p className="text-base md:text-lg text-gray-600 mb-10 leading-relaxed font-normal max-w-prose">
+              <p className="text-base md:text-lg text-gray-600 mb-10 leading-relaxed font-normal max-w-prose break-keep">
                 단품 판매의 한계를 넘어 대량 주문을 안정적으로 소화하고 싶으신가요?
-                <br />
+                <br className="hidden md:block" />
                 <span className="inline-block mt-4">
                   <strong className="text-gray-800 font-bold">
                     시간이 지나도 일정한 맛, 효율적인 대량 조리 공정, 신뢰감을 주는 패키징,
                   </strong>
                 </span>
-                <br />
+                <br className="hidden md:block" />
                 그리고{' '}
                 <strong className="text-gray-800 font-bold">수수료 없는 나만의 예약 채널 구축</strong>까지
                 실무의 전 과정을 <strong className="text-gray-800 font-bold">1:1</strong>로 함께 설계합니다.
@@ -131,7 +131,7 @@ export default function HeroSection() {
               <div className="flex flex-col sm:flex-row items-start gap-4 mb-16">
                 <button
                   onClick={handleEducationConsult}
-                  className="group relative w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-300 shadow-lg shadow-pink-300/50 hover:shadow-pink-400/60 hover:scale-105 whitespace-nowrap cursor-pointer pointer-events-auto"
+                  className="group relative w-full sm:w-auto px-6 sm:px-10 py-4 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-300 shadow-lg shadow-pink-300/50 hover:shadow-pink-400/60 hover:scale-105 whitespace-nowrap cursor-pointer pointer-events-auto"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-3">
                     교육 상담 신청
@@ -141,7 +141,7 @@ export default function HeroSection() {
                 </button>
                 <button
                   onClick={() => navigate('/classes')}
-                  className="group w-full sm:w-auto px-10 py-4 bg-white/80 backdrop-blur-xl text-gray-700 text-lg font-bold rounded-full transition-all duration-300 border-2 border-purple-200 hover:border-pink-300 hover:bg-white whitespace-nowrap cursor-pointer pointer-events-auto"
+                  className="group w-full sm:w-auto px-6 sm:px-10 py-4 bg-white/80 backdrop-blur-xl text-gray-700 text-lg font-bold rounded-full transition-all duration-300 border-2 border-purple-200 hover:border-pink-300 hover:bg-white whitespace-nowrap cursor-pointer pointer-events-auto"
                 >
                   <span className="flex items-center justify-center gap-3">
                     커리큘럼 살펴보기
@@ -154,7 +154,7 @@ export default function HeroSection() {
               <div className="mt-8 p-6 bg-white/60 backdrop-blur-md border border-purple-100 rounded-2xl shadow-lg max-w-lg pointer-events-auto">
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <div className="text-sm text-gray-700 font-medium whitespace-nowrap">
-                    최신소식과 특별혜택을<br />
+                    최신소식과 특별혜택을<br className="hidden sm:block" />
                     이메일로 받아보세요
                   </div>
                   <div className="relative w-full">
@@ -184,38 +184,38 @@ export default function HeroSection() {
             {/* Right Content - Stats */}
             <div className="space-y-6">
               {/* Large Counter Card */}
-              <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-12 border border-purple-100 shadow-2xl text-center pointer-events-auto">
+              <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-purple-100 shadow-2xl text-center pointer-events-auto">
                 <div className="mb-4">
-                  <div className="text-7xl md:text-8xl font-black bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                  <div className="text-6xl md:text-8xl font-black bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
                     {count}
                   </div>
-                  <div className="text-3xl md:text-4xl font-black text-gray-800 mt-2">인분+</div>
+                  <div className="text-2xl md:text-4xl font-black text-gray-800 mt-2">인분+</div>
                 </div>
-                <div className="text-lg text-gray-600 font-medium">자사몰까지 구축하는 실전 시스템</div>
+                <div className="text-base md:text-lg text-gray-600 font-medium break-keep">자사몰까지 구축하는 실전 시스템</div>
               </div>
 
               {/* Small Stats Grid */}
-              <div className="grid grid-cols-3 gap-4 pointer-events-auto">
-                <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100 text-center shadow-lg">
-                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center">
-                    <i className="ri-user-heart-line text-2xl text-white"></i>
+              <div className="grid grid-cols-3 gap-3 md:gap-4 pointer-events-auto">
+                <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-purple-100 text-center shadow-lg">
+                  <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center">
+                    <i className="ri-user-heart-line text-xl md:text-2xl text-white"></i>
                   </div>
-                  <div className="text-2xl font-black text-pink-500 mb-1">1:1</div>
-                  <div className="text-sm text-gray-600 font-medium">맞춤형 교육</div>
+                  <div className="text-xl md:text-2xl font-black text-pink-500 mb-1">1:1</div>
+                  <div className="text-xs md:text-sm text-gray-600 font-medium break-keep">맞춤형 교육</div>
                 </div>
-                <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100 text-center shadow-lg">
-                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center">
-                    <i className="ri-percent-line text-2xl text-white"></i>
+                <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-purple-100 text-center shadow-lg">
+                  <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center">
+                    <i className="ri-percent-line text-xl md:text-2xl text-white"></i>
                   </div>
-                  <div className="text-2xl font-black text-pink-500 mb-1">수수료 0원</div>
-                  <div className="text-sm text-gray-600 font-medium">자사몰</div>
+                  <div className="text-xl md:text-2xl font-black text-pink-500 mb-1">0원</div>
+                  <div className="text-xs md:text-sm text-gray-600 font-medium break-keep">수수료 없는 자사몰</div>
                 </div>
-                <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100 text-center shadow-lg">
-                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-purple-400 to-purple-300 rounded-xl flex items-center justify-center">
-                    <i className="ri-brush-2-line text-2xl text-white"></i>
+                <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-purple-100 text-center shadow-lg">
+                  <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 bg-gradient-to-br from-purple-400 to-purple-300 rounded-xl flex items-center justify-center">
+                    <i className="ri-brush-2-line text-xl md:text-2xl text-white"></i>
                   </div>
-                  <div className="text-2xl font-black text-purple-500 mb-1">포장디자인</div>
-                  <div className="text-sm text-gray-600 font-medium">브랜딩까지</div>
+                  <div className="text-xl md:text-2xl font-black text-purple-500 mb-1">디자인</div>
+                  <div className="text-xs md:text-sm text-gray-600 font-medium break-keep">포장/브랜딩 패키지</div>
                 </div>
               </div>
             </div>
@@ -224,7 +224,7 @@ export default function HeroSection() {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce pointer-events-none">
+      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce pointer-events-none hidden md:block">
         <div className="w-10 h-16 border-2 border-pink-300 rounded-full flex items-start justify-center p-2 backdrop-blur-sm bg-white/30">
           <div className="w-2 h-4 bg-gradient-to-b from-pink-400 to-purple-400 rounded-full animate-pulse"></div>
         </div>

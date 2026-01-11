@@ -94,17 +94,17 @@ export default function IntroSection() {
             <i className="ri-star-fill text-pink-500"></i>
             <span className="text-sm font-semibold text-purple-700">클래스 소개</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 mb-6 leading-tight px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 mb-6 leading-tight px-4 break-keep">
             단순한 레시피가 아니라
             <br />
             <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
               성공적인 창업 여정
             </span>
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed break-keep">
             체계적인 커리큘럼과 실전 경험을 통해 여러분의 꿈을 현실로 만들어드립니다.
           </p>
-          <p className="mt-3 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-3 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed break-keep">
             교육 이후 스스로 비즈니스를 확장할 수 있는 기초 체력을 갖춰드립니다.
           </p>
         </div>
@@ -114,9 +114,8 @@ export default function IntroSection() {
           {features.map((feature, index) => (
             <div
               key={feature.number}
-              className={`group relative bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-purple-100 hover:border-purple-300 transition-all duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer ${
-                isVisible ? 'animate-fade-in-up' : 'opacity-0'
-              }`}
+              className={`group relative bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-purple-100 hover:border-purple-300 transition-all duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer ${isVisible ? 'animate-fade-in-up' : 'opacity-0'
+                }`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="absolute top-6 left-6 text-2xl font-black text-gray-200">

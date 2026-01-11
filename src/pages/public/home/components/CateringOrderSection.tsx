@@ -112,18 +112,18 @@ export default function CateringOrderSection() {
           <div className="inline-block px-6 py-2 bg-gradient-to-r from-pink-100 to-purple-100 rounded-full border border-pink-200 mb-6">
             <span className="text-sm font-semibold text-purple-600 tracking-wider">🍽️ CATERING ORDER</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 break-keep">
             <strong className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">케이터링 주문</strong> 접수
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto break-keep">
             특별한 행사를 위한 <strong className="text-pink-500">케이터링 서비스</strong>를 제공합니다<br />
             샌드위치와 핑거푸드로 여러분의 이벤트를 더욱 특별하게 만들어드립니다
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Form */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-purple-100 shadow-lg">
+          <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-purple-100 shadow-lg">
             <form id="catering-order-form" data-readdy-form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
@@ -314,7 +314,7 @@ export default function CateringOrderSection() {
               />
             </div>
 
-            <div className="bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl p-8 border border-pink-200 shadow-lg">
+            <div className="bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl p-6 sm:p-8 border border-pink-200 shadow-lg">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">
                 <strong className="text-pink-500">케이터링 서비스</strong> 안내
               </h3>
@@ -352,7 +352,7 @@ export default function CateringOrderSection() {
               </ul>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-purple-100 shadow-lg">
+            <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-purple-100 shadow-lg">
               <h4 className="text-xl font-bold text-gray-800 mb-4">문의 안내</h4>
               <div className="space-y-3 text-sm text-gray-600">
                 <p className="flex items-center gap-3">

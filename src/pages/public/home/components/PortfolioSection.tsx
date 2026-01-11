@@ -185,12 +185,12 @@ export default function PortfolioSection() {
             <div className="inline-block px-6 py-2 bg-gradient-to-r from-pink-100 to-purple-100 rounded-full border border-pink-200 mb-6">
               <span className="text-sm font-semibold text-purple-600 tracking-wider">PORTFOLIO & CATERING</span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black text-gray-800 mb-6 leading-tight">
+            <h2 className="text-5xl md:text-6xl font-black text-gray-800 mb-6 leading-tight break-keep">
               <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
                 포트폴리오 & 케이터링 주문
               </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed break-keep">
               다양한 케이터링 메뉴를 확인하고<br />
               원하는 메뉴를 바로 주문하세요.
             </p>
@@ -301,7 +301,7 @@ export default function PortfolioSection() {
               <i className="ri-close-line text-xl"></i>
             </button>
 
-            <div className="p-8">
+            <div className="p-6 sm:p-8">
               <div className="text-center mb-8">
                 <div className="inline-block px-6 py-2 bg-gradient-to-r from-pink-100 to-purple-100 backdrop-blur-xl rounded-full border border-pink-200 mb-4">
                   <span className="text-sm font-semibold text-purple-600 tracking-wider">CATERING ORDER</span>

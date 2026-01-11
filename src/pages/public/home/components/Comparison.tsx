@@ -4,7 +4,7 @@ export default function Comparison() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
           <p className="text-sm font-bold tracking-[0.35em] text-slate-300">WHY ORDER BUILDER</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-900 leading-tight">
+          <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-900 leading-tight break-keep">
             왜 사람들은 일반 요리 학원 대신
             <br />
             <span className="text-pink-500">Order Builder</span>을 선택할까요?
@@ -13,7 +13,7 @@ export default function Comparison() {
 
         <div className="relative rounded-[2.5rem] bg-white border border-slate-100 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.35)] overflow-hidden">
           <div className="grid md:grid-cols-2">
-            <div className="p-10 sm:p-12 bg-slate-50/60">
+            <div className="p-6 sm:p-12 bg-slate-50/60">
               <p className="text-sm font-semibold text-slate-400 mb-8">일반 요리 클래스</p>
               <ul className="space-y-6 text-slate-400 text-sm font-semibold">
                 {[
@@ -31,7 +31,7 @@ export default function Comparison() {
                 ))}
               </ul>
             </div>
-            <div className="p-10 sm:p-12 bg-white">
+            <div className="p-6 sm:p-12 bg-white">
               <div className="flex items-center gap-2 mb-8">
                 <p className="text-sm font-black text-slate-900">ORDER BUILDER</p>
                 <span className="px-2 py-1 text-[10px] font-bold text-pink-600 bg-pink-50 rounded-full">
@@ -57,7 +57,7 @@ export default function Comparison() {
           </div>
         </div>
 
-        <div className="mt-10 rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 text-white p-10 sm:p-12 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.7)]">
+        <div className="mt-10 rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 text-white p-6 sm:p-12 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.7)]">
           <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 items-center">
             <div>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-bold uppercase tracking-widest text-slate-200">
