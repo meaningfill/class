@@ -70,6 +70,7 @@ export default defineConfig({
   build: {
     sourcemap: true,
     outDir: "out",
+    chunkSizeWarningLimit: 1000,
   },
   resolve: {
     alias: {
