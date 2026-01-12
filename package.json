@@ -42,14 +42,13 @@
     "vite": "^7.0.3"
   },
   "name": "react",
-  "engines": {
-    "node": "22.x"
+ "engines": {
+    "node": "20.x"
   },
-  "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "build": "node node_modules/vite/bin/vite.js build",
     "blog:queue": "node scripts/auto_generate_blog_queue.mjs",
+    "dev": "vite",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "type-check": "tsc --noEmit --project tsconfig.app.json"
