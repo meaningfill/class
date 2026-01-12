@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://class-one.vercel.app/sitemap.xml
+
+Sitemap: https://startupagency.co.kr/sitemap.xml
