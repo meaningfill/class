@@ -47,9 +47,9 @@
   },
   "private": true,
   "scripts": {
-    "build": "npx --yes vite build",
-    "blog:queue": "node scripts/auto_generate_blog_queue.mjs",
     "dev": "vite",
+    "build": "vite build",
+    "blog:queue": "node scripts/auto_generate_blog_queue.mjs",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "type-check": "tsc --noEmit --project tsconfig.app.json"
