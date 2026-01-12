@@ -42,11 +42,12 @@
     "vite": "^7.0.3"
   },
   "name": "react",
- "engines": {
+  "engines": {
     "node": "20.x"
   },
+  "private": true,
   "scripts": {
-    "build": "node node_modules/vite/bin/vite.js build",
+    "build": "echo \"[DEBUG] URL: $VITE_PUBLIC_SUPABASE_URL\" && node node_modules/vite/bin/vite.js build",
     "blog:queue": "node scripts/auto_generate_blog_queue.mjs",
     "dev": "vite",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
