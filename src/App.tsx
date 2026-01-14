@@ -12,6 +12,7 @@ function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <BrowserRouter basename={typeof __BASE_PATH__ !== "undefined" ? __BASE_PATH__ : "/"}>
+        <CleanCanonical />
         <AppRoutes />
         <a
           href={KAKAO_CHAT_URL}
@@ -25,6 +26,33 @@ function App() {
       </BrowserRouter>
     </I18nextProvider>
   );
+}
+
+// ----------------------------------------------------------------------
+// Canonical URL Manager (Enforces www.startupagency.co.kr)
+// ----------------------------------------------------------------------
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
+function CleanCanonical() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const DOMAIN = "https://www.startupagency.co.kr";
+    // Remove trailing slash for consistency, unless it's root
+    const path = location.pathname === "/" ? "" : location.pathname.replace(/\/$/, "");
+    const canonicalUrl = `${DOMAIN}${path}`;
+
+    let link = document.querySelector("link[rel='canonical']");
+    if (!link) {
+      link = document.createElement("link");
+      link.setAttribute("rel", "canonical");
+      document.head.appendChild(link);
+    }
+    link.setAttribute("href", canonicalUrl);
+  }, [location]);
+
+  return null;
 }
 
 export default App;

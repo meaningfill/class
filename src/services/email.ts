@@ -1,7 +1,7 @@
 // Email Service using FormSubmit.co (Simpler, No API Keys needed)
 
 // ⚠️ CHANGE THIS TO YOUR ADMIN EMAIL ADDRESS
-const ADMIN_EMAIL = 'master@orderbuilder.co.kr';
+const ADMIN_EMAIL = 'master@startupagency.co.kr';
 
 interface EmailData {
     type: string;

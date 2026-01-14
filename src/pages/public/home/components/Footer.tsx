@@ -9,7 +9,7 @@ interface ContactItem {
 }
 
 const defaultContactInfo: ContactItem[] = [
-  { icon: 'ri-mail-line', text: 'contact@catering.com', gradient: 'from-pink-400 to-purple-400' },
+  { icon: 'ri-mail-line', text: 'master@startupagency.co.kr', gradient: 'from-pink-400 to-purple-400' },
   { icon: 'ri-phone-line', text: '010-1234-5678', gradient: 'from-purple-400 to-pink-500' },
   { icon: 'ri-map-pin-line', text: '서울시 강남구', gradient: 'from-pink-500 to-purple-500' }
 ];
@@ -138,7 +138,7 @@ export default function Footer() {
                   <i className="ri-mail-line text-white"></i>
                 </div>
                 <span className="text-sm text-gray-600 pt-2 group-hover:text-gray-800 transition-colors">
-                  master@orderbuilder.co.kr
+                  master@startupagency.co.kr
                 </span>
               </li>
               <li className="group flex items-start gap-3">
