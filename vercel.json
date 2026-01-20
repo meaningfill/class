@@ -7,12 +7,5 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "redirects": [
-    {
-      "source": "/:path*",
-      "destination": "https://meaningfill.co.kr/:path*",
-      "permanent": true
-    }
   ]
 }
