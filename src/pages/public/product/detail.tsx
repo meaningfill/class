@@ -75,7 +75,7 @@ export default function ProductDetailPage() {
       },
       brand: {
         '@type': 'Brand',
-        name: 'Order Builder'
+        name: '미닝필'
       },
       category: product.event_type || '케이터링'
     };
@@ -86,7 +86,7 @@ export default function ProductDetailPage() {
     document.head.appendChild(script);
 
     const seoTitle = product.seo_title || product.name;
-    document.title = `${seoTitle} | Order Builder`;
+    document.title = `${seoTitle} | 미닝필`;
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
@@ -163,43 +163,58 @@ export default function ProductDetailPage() {
 
     setIsSubmitting(true);
 
+    let orderDataForNotify = null;
+
     try {
       // 1. Log order to Supabase
-      const { data: orderData, error: orderError } = await supabase
-        .from('product_orders')
-        .insert({
-          product_id: product.id,
-          product_name: product.name,
-          customer_name: orderForm.name,
-          customer_phone: orderForm.phone,
-          quantity: quantity,
-          total_price: totalPrice,
-          status: 'initiated'
-        })
-        .select()
-        .single();
+      // We wrap this in a try-catch so database errors don't block the payment flow.
+      try {
+        const { data, error } = await supabase
+          .from('product_orders')
+          .insert({
+            product_id: product.id,
+            product_name: product.name,
+            customer_name: orderForm.name,
+            customer_phone: orderForm.phone,
+            quantity: quantity,
+            total_price: totalPrice,
+            status: 'initiated'
+          })
+          .select()
+          .single();
 
-      if (orderError) {
-        console.error('Order logging failed:', orderError);
-        // We continue anyway to not block the sale, but notification might fail
+        if (error) {
+          console.error('Order logging failed:', error);
+        } else {
+          orderDataForNotify = data;
+        }
+      } catch (dbError) {
+        console.error('Supabase interaction failed:', dbError);
       }
 
       // 2. Send Notification
-      if (orderData) {
-        await sendOrderNotification(orderData);
-      } else {
-        // Fallback object if insert failed but we want to notify (optional, skipped for now)
+      // We also wrap this to ensure it doesn't block the redirect.
+      if (orderDataForNotify) {
+        try {
+          await sendOrderNotification(orderDataForNotify);
+        } catch (notifyError) {
+          console.error('Notification failed:', notifyError);
+        }
       }
 
-      // 3. Close Modal & Redirect
-      setShowOrderModal(false);
-      window.open(product.payment_link!, '_blank');
-
     } catch (error) {
-      console.error('Error processing order:', error);
-      alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      console.error('Unexpected error in order process:', error);
+      // We do not alert here because we want to proceed to payment regardless of internal tracking errors.
     } finally {
+      // 3. Close Modal & Redirect - ALWAYS execute this
       setIsSubmitting(false);
+      setShowOrderModal(false);
+
+      if (product.payment_link) {
+        window.open(product.payment_link, '_blank');
+      } else {
+        alert('결제 링크가 없습니다.');
+      }
     }
   };
 

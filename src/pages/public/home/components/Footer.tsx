@@ -9,7 +9,7 @@ interface ContactItem {
 }
 
 const defaultContactInfo: ContactItem[] = [
-  { icon: 'ri-mail-line', text: 'master@startupagency.co.kr', gradient: 'from-pink-400 to-purple-400' },
+  { icon: 'ri-mail-line', text: 'meaningfill@meaningfill.co.kr', gradient: 'from-pink-400 to-purple-400' },
   { icon: 'ri-phone-line', text: '010-1234-5678', gradient: 'from-purple-400 to-pink-500' },
   { icon: 'ri-map-pin-line', text: '서울시 강남구', gradient: 'from-pink-500 to-purple-500' }
 ];
@@ -96,7 +96,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <div className="mb-6">
               <h3 className="text-3xl font-black bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent mb-3">
-                Order Builder
+                Meaningfill
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
                 주문을 시작하는 구조를 만듭니다.<br />
@@ -138,7 +138,7 @@ export default function Footer() {
                   <i className="ri-mail-line text-white"></i>
                 </div>
                 <span className="text-sm text-gray-600 pt-2 group-hover:text-gray-800 transition-colors">
-                  master@startupagency.co.kr
+                  meaningfill@meaningfill.co.kr
                 </span>
               </li>
               <li className="group flex items-start gap-3">
@@ -154,10 +154,11 @@ export default function Footer() {
                   <i className="ri-map-pin-line text-white"></i>
                 </div>
                 <div className="text-sm text-gray-600 pt-2 group-hover:text-gray-800 transition-colors flex flex-col">
-                  <span>서울시 서대문구 충정로 63</span>
-                  <span className="text-xs text-gray-500 mt-1">상호명: 미닝필 | 대표자: 김재혁</span>
+                  <span>서울 서대문구 충정로 63, 1층 (충정로2가)</span>
+                  <span className="text-xs text-gray-500 mt-1">상호명: 미닝필 (Meaningfill) | 대표자: 김재혁</span>
                   <span className="text-xs text-gray-500">사업자번호: 202-02-77642</span>
                   <span className="text-xs text-gray-500">통신판매업: 2025-서울서대문-0827</span>
+                  <span className="text-xs text-gray-500">개인정보관리책임자: 김재혁</span>
                 </div>
               </li>
             </ul>
@@ -189,7 +190,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-purple-100">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-sm">© 2026 Order Builder. All rights reserved.</p>
+            <p className="text-gray-500 text-sm">© 2026 Meaningfill. All rights reserved.</p>
             <div className="flex items-center gap-6">
               <button
                 onClick={() => setActiveModal('terms')}
@@ -234,7 +235,7 @@ export default function Footer() {
                 <div className="space-y-6">
                   <div>
                     <h4 className="font-bold text-gray-900 mb-2">제1조 (목적)</h4>
-                    <p className="text-gray-600">이 약관은 Order Builder(이하 "회사")가 운영하는 사이트에서 제공하는 인터넷 관련 서비스(이하 "서비스")를 이용함에 있어 사이버몰과 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+                    <p className="text-gray-600">이 약관은 미닝필 (Meaningfill)(이하 "회사")가 운영하는 사이트에서 제공하는 인터넷 관련 서비스(이하 "서비스")를 이용함에 있어 사이버몰과 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
                   </div>
 
                   <div>

@@ -38,7 +38,7 @@ function CleanCanonical() {
   const location = useLocation();
 
   useEffect(() => {
-    const DOMAIN = "https://www.startupagency.co.kr";
+    const DOMAIN = "https://www.meaningfill.co.kr";
     // Remove trailing slash for consistency, unless it's root
     const path = location.pathname === "/" ? "" : location.pathname.replace(/\/$/, "");
     const canonicalUrl = `${DOMAIN}${path}`;
