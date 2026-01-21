@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://startupagency.co.kr/sitemap.xml
+Sitemap: https://meaningfill.co.kr/sitemap.xml

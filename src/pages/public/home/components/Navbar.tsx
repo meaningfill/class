@@ -52,57 +52,51 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white shadow-lg' : 'bg-white/10 backdrop-blur-md'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-lg' : 'bg-white/10 backdrop-blur-md'
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogoClick}>
             <div
-              className={`w-12 h-12 flex items-center justify-center rounded-full ${
-                isScrolled
+              className={`w-12 h-12 flex items-center justify-center rounded-full ${isScrolled
                   ? 'bg-gradient-to-r from-pink-500 to-purple-600'
                   : 'bg-gradient-to-r from-pink-400 to-purple-500'
-              }`}
+                }`}
             >
               <i className="ri-restaurant-2-line text-2xl text-white"></i>
             </div>
-            <span className="text-xl font-bold text-slate-900">Order Builder</span>
+            <span className="text-xl font-bold text-slate-900">미닝필</span>
           </div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
             <button
               onClick={handleLogoClick}
-              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${
-                isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
-              }`}
+              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
+                }`}
             >
               HOME
             </button>
             <button
               onClick={() => navigateToPage('/classes')}
-              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${
-                isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
-              }`}
+              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
+                }`}
             >
               클래스소개
             </button>
             <button
               onClick={() => scrollToSection('portfolio')}
-              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${
-                isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
-              }`}
+              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
+                }`}
             >
               포트폴리오&케이터링 주문
             </button>
             <button
               onClick={() => navigateToPage('/blog')}
-              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${
-                isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
-              }`}
+              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
+                }`}
             >
               블로그
             </button>
@@ -117,9 +111,8 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`md:hidden w-10 h-10 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
-              isScrolled ? 'text-slate-900 hover:bg-slate-100' : 'text-slate-900 hover:bg-white/20'
-            }`}
+            className={`md:hidden w-10 h-10 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${isScrolled ? 'text-slate-900 hover:bg-slate-100' : 'text-slate-900 hover:bg-white/20'
+              }`}
           >
             <i className={`text-2xl ${isMobileMenuOpen ? 'ri-close-line' : 'ri-menu-line'}`}></i>
           </button>

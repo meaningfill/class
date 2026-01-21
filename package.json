@@ -43,7 +43,7 @@
     "unplugin-auto-import": "^19.3.0",
     "vite": "^7.0.3"
   },
-  "name": "react",
+  "name": "meaningfill",
   "engines": {
     "node": "20.x"
   },
@@ -63,7 +63,7 @@
       "path": "./node_modules/cz-conventional-changelog"
     }
   },
-  "description": "",
+  "description": "미닝필 - 단체 주문 시스템 교육 및 케이터링",
   "main": "Tailwind.Config.js",
   "directories": {
     "doc": "docs"

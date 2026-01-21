@@ -22,7 +22,7 @@ export const sendEmailNotification = async (data: EmailData) => {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                _subject: `[Order Builder] ${data.type} - ${data.name}님`,
+                _subject: `[미닝필] ${data.type} - ${data.name}님`,
                 _template: 'table', // Uses a nice table format
                 _captcha: "false",  // Disable captcha for direct API usage
 
