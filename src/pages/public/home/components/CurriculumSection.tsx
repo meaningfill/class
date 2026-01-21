@@ -59,7 +59,7 @@ export default function CurriculumSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6 break-keep">
-            Order Builder가 제안하는<br />
+            미닝필이 제안하는<br />
             <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
               실질적인 창업 로드맵
             </span>

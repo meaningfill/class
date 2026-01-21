@@ -16,7 +16,7 @@ export default function HomePage() {
     const organizationSchema = {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: 'Order Builder',
+      name: '미닝필',
       url: siteUrl,
       logo: `${siteUrl}/logo.png`,
       description: '레시피부터 웹사이트까지, 바로 창업 가능한 케이터링 클래스',
@@ -36,7 +36,7 @@ export default function HomePage() {
     const websiteSchema = {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      name: 'Order Builder',
+      name: '미닝필',
       url: siteUrl,
       description:
         '레시피, 패키징, 가격 책정, 주문 웹사이트까지 케이터링 창업의 모든 것을 1:1로 설계합니다',
@@ -51,7 +51,7 @@ export default function HomePage() {
     const localBusinessSchema = {
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
-      name: 'Order Builder',
+      name: '미닝필',
       image: `${siteUrl}/logo.png`,
       url: siteUrl,
       address: {
@@ -66,7 +66,7 @@ export default function HomePage() {
       },
       priceRange: '₩₩',
       description:
-        'Order Builder는 레시피만 알려주지 않습니다. 대량 조리법, 패키징, 가격 책정, 주문 웹사이트 구축까지 케이터링 창업에 필요한 모든 것을 1:1로 함께 만드는 실전 창업 클래스입니다.',
+        '미닝필은 레시피만 알려주지 않습니다. 대량 조리법, 패키징, 가격 책정, 주문 웹사이트 구축까지 케이터링 창업에 필요한 모든 것을 1:1로 함께 만드는 실전 창업 클래스입니다.',
     };
 
     // Add schemas to head
@@ -86,13 +86,13 @@ export default function HomePage() {
     document.head.appendChild(script3);
 
     // Update meta tags
-    document.title = 'Order Builder | 레시피부터 웹사이트까지, 바로 창업 가능한 케이터링 클래스';
+    document.title = '미닝필 | 레시피부터 웹사이트까지, 바로 창업 가능한 케이터링 클래스';
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
         'content',
-        'Order Builder는 레시피만 알려주지 않습니다. 대량 조리법, 패키징, 가격 책정, 주문 웹사이트 구축까지 케이터링 창업에 필요한 모든 것을 1:1로 함께 만드는 실전 창업 클래스입니다.'
+        '미닝필은 레시피만 알려주지 않습니다. 대량 조리법, 패키징, 가격 책정, 주문 웹사이트 구축까지 케이터링 창업에 필요한 모든 것을 1:1로 함께 만드는 실전 창업 클래스입니다.'
       );
     }
 

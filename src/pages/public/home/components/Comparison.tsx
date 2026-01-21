@@ -3,11 +3,11 @@ export default function Comparison() {
     <section className="bg-white py-20">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-sm font-bold tracking-[0.35em] text-slate-300">WHY ORDER BUILDER</p>
+          <p className="text-sm font-bold tracking-[0.35em] text-slate-300">WHY MEANINGFILL</p>
           <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-900 leading-tight break-keep">
             왜 사람들은 일반 요리 학원 대신
             <br />
-            <span className="text-pink-500">Order Builder</span>을 선택할까요?
+            <span className="text-pink-500">미닝필</span>을 선택할까요?
           </h2>
         </div>
 
@@ -33,7 +33,7 @@ export default function Comparison() {
             </div>
             <div className="p-6 sm:p-12 bg-white">
               <div className="flex items-center gap-2 mb-8">
-                <p className="text-sm font-black text-slate-900">ORDER BUILDER</p>
+                <p className="text-sm font-black text-slate-900">MEANINGFILL</p>
                 <span className="px-2 py-1 text-[10px] font-bold text-pink-600 bg-pink-50 rounded-full">
                   ONLY
                 </span>
@@ -69,7 +69,7 @@ export default function Comparison() {
                 완성되는 시스템 산출물
               </h3>
               <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-                Order Builder는 막연한 강의가 아닙니다. 실제로 운영 가능한 결과물을
+                미닝필은 막연한 강의가 아닙니다. 실제로 운영 가능한 결과물을
                 <br />
                 즉시 활용할 수 있게 설계합니다.
               </p>
