@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase, Class } from '../../../services/supabase';
 import Navbar from '../home/components/Navbar';
@@ -20,8 +20,8 @@ export default function ClassesPage() {
     const itemListSchema = {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      "name": "Order Builder ?�래??,
-      "description": "주문???�어?�는 구조부??만드???�전 창업 교육 ?�로그램",
+      "name": "미닝필 ?�래??,
+      "description": "주문???�어?�는 구조부??만드???�전 창업 교육 ?�로그램",
       "url": `${siteUrl}/classes`,
       "numberOfItems": classes.length,
       "itemListElement": classes.map((classItem, index) => ({
@@ -33,7 +33,7 @@ export default function ClassesPage() {
           "description": classItem.description,
           "provider": {
             "@type": "Organization",
-            "name": "Order Builder"
+            "name": "미닝필"
           }
         }
       }))
@@ -45,16 +45,16 @@ export default function ClassesPage() {
     document.head.appendChild(script);
 
     // Update meta tags
-    document.title = '?�래??| Order Builder';
+    document.title = '?�래??| 미닝필';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', '주문???�어?�는 구조부??만드???�전 창업 교육 ?�로그램. ?�키지, 가�? 주문 ?�선, ?�사?�트까�? ?�제 주문??만드????과정??배웁?�다.');
+      metaDescription.setAttribute('content', '주문???�어?�는 구조부??만드???�전 창업 교육 ?�로그램. ?�키지, 가�? 주문 ?�선, ?�사?�트까�? ?�제 주문??만드????과정??배웁?�다.');
     }
 
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) {
-      ogTitle.setAttribute('content', '?�래??| Order Builder');
+      ogTitle.setAttribute('content', '?�래??| 미닝필');
     }
 
     return () => {
@@ -93,9 +93,9 @@ export default function ClassesPage() {
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-purple-200/40 to-blue-200/40 rounded-full blur-3xl"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold text-gray-800 mb-6">케?�터�??�래??/h1>
+          <h1 className="text-5xl font-bold text-gray-800 mb-6">케?�터�??�래??/h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            ?�문 케?�터�??�프가 ?�기 ?�한 체계?�인 교육 ?�로그램??만나보세??          </p>
+            ?�문 케?�터�??�프가 ?�기 ?�한 체계?�인 교육 ?�로그램??만나보세??          </p>
         </div>
       </section>
 
@@ -111,7 +111,7 @@ export default function ClassesPage() {
                   : 'bg-white text-gray-700 hover:bg-purple-50 border border-purple-100'
               }`}
             >
-              ?�체
+              ?�체
             </button>
             <button
               onClick={() => setFilter('beginner')}
@@ -186,7 +186,7 @@ export default function ClassesPage() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2 text-gray-500">
                         <i className="ri-time-line"></i>
-                        <span className="text-sm">{classItem.duration_weeks}�?과정</span>
+                        <span className="text-sm">{classItem.duration_weeks}�?과정</span>
                       </div>
                       <div className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
                         {classItem.price.toLocaleString()}??                      </div>
@@ -212,7 +212,7 @@ export default function ClassesPage() {
           {!loading && filteredClasses.length === 0 && (
             <div className="text-center py-20">
               <i className="ri-file-list-3-line text-6xl text-purple-200 mb-4"></i>
-              <p className="text-xl text-gray-500">?�당?�는 ?�래?��? ?�습?�다</p>
+              <p className="text-xl text-gray-500">?�당?�는 ?�래?��? ?�습?�다</p>
             </div>
           )}
         </div>

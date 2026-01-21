@@ -45,7 +45,7 @@ export default function BlogDetailPage() {
         },
         "publisher": {
           "@type": "Organization",
-          "name": "Order Builder",
+          "name": "미닝필",
           "url": siteUrl,
           "logo": {
             "@type": "ImageObject",
@@ -63,7 +63,7 @@ export default function BlogDetailPage() {
       script.text = JSON.stringify(blogPostingSchema);
       document.head.appendChild(script);
 
-      document.title = `${post.title} | Order Builder`;
+      document.title = `${post.title} | 미닝필`;
 
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {

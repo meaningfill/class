@@ -194,7 +194,7 @@ export default function ClassDetailPage() {
           <div className="mt-12 text-center text-sm text-slate-500">
             <p>창업 현장에서 마주하는 진짜 질문들.</p>
             <p className="font-semibold text-slate-700">
-              Order Builder는 이 모든 과정을 4일 안에 함께 만듭니다.
+              미닝필은 이 모든 과정을 4일 안에 함께 만듭니다.
             </p>
           </div>
         </div>
@@ -212,7 +212,7 @@ export default function ClassDetailPage() {
             </p>
           </div>
 
-          <p className="text-lg font-bold text-slate-800 mb-6">Order Builder에서 만드는 것들:</p>
+          <p className="text-lg font-bold text-slate-800 mb-6">미닝필에서 만드는 것들:</p>
           <div className="space-y-4">
             {solutionDays.map((item) => (
               <div key={item.title} className="flex items-center gap-4 rounded-3xl border border-slate-100 bg-white p-6">

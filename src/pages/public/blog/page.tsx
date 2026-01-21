@@ -22,12 +22,12 @@ export default function BlogPage() {
     const blogSchema = {
       '@context': 'https://schema.org',
       '@type': 'Blog',
-      name: 'Order Builder 블로그',
+      name: '미닝필 블로그',
       description: '케이터링 창업과 비즈니스 운영에 도움이 되는 정보를 공유합니다.',
       url: `${siteUrl}/blog`,
       publisher: {
         '@type': 'Organization',
-        name: 'Order Builder',
+        name: '미닝필',
         url: siteUrl,
       },
     };
@@ -37,19 +37,19 @@ export default function BlogPage() {
     script.text = JSON.stringify(blogSchema);
     document.head.appendChild(script);
 
-    document.title = '블로그 | Order Builder';
+    document.title = '블로그 | 미닝필';
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
         'content',
-        '케이터링 창업과 비즈니스 운영에 도움이 되는 정보를 공유합니다. Order Builder 전문가의 블로그를 확인하세요.'
+        '케이터링 창업과 비즈니스 운영에 도움이 되는 정보를 공유합니다. 미닝필 전문가의 블로그를 확인하세요.'
       );
     }
 
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) {
-      ogTitle.setAttribute('content', '블로그 | Order Builder');
+      ogTitle.setAttribute('content', '블로그 | 미닝필');
     }
 
     return () => {
@@ -101,9 +101,8 @@ export default function BlogPage() {
                 <Link
                   key={post.id}
                   to={`/blog/${post.id}`}
-                  className={`group flex flex-col ${
-                    index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                  } gap-8 bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden border border-purple-100 shadow-md hover:shadow-2xl hover:shadow-purple-200/50 transition-all duration-300`}
+                  className={`group flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
+                    } gap-8 bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden border border-purple-100 shadow-md hover:shadow-2xl hover:shadow-purple-200/50 transition-all duration-300`}
                 >
                   <div className="md:w-1/2 h-80 overflow-hidden">
                     <img
