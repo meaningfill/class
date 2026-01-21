@@ -22,7 +22,7 @@ export default function PortfolioPage() {
     const imageGallerySchema = {
       '@context': 'https://schema.org',
       '@type': 'ImageGallery',
-      name: 'Order Builder 포트폴리오',
+      name: '미닝필 포트폴리오',
       description: '다양한 행사와 이벤트에 사용된 케이터링 사진을 소개합니다.',
       url: `${siteUrl}/portfolio`,
       image: portfolio.map((item) => ({
@@ -38,7 +38,7 @@ export default function PortfolioPage() {
     script.text = JSON.stringify(imageGallerySchema);
     document.head.appendChild(script);
 
-    document.title = '포트폴리오 | Order Builder';
+    document.title = '포트폴리오 | 미닝필';
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
@@ -50,7 +50,7 @@ export default function PortfolioPage() {
 
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) {
-      ogTitle.setAttribute('content', '포트폴리오 | Order Builder');
+      ogTitle.setAttribute('content', '포트폴리오 | 미닝필');
     }
 
     return () => {
