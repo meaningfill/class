@@ -38,6 +38,7 @@ export interface Product {
   id: number;
   name: string;
   price: number;
+  payment_link: string | null;
   image_url: string;
   description: string;
   detailed_description: string | null;
@@ -127,6 +128,18 @@ export interface PublishQueueItem {
   thread_text: string | null;
   created_at: string;
   published_at: string | null;
+}
+
+export interface ProductOrder {
+  id: string;
+  product_id: number;
+  product_name: string;
+  customer_name: string;
+  customer_phone: string;
+  quantity: number;
+  total_price: number;
+  status: string;
+  created_at: string;
 }
 
 

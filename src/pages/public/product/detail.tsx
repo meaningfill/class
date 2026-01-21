@@ -5,7 +5,7 @@ import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
 import { supabase } from '../../../services/supabase';
 import type { Product } from '../../../services/supabase';
-import { sendEmailNotification } from '../../../services/email';
+import { sendOrderNotification } from '../../../services/notification';
 
 const MIN_ORDER_QUANTITY = 30;
 
@@ -15,23 +15,12 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showOrderModal, setShowOrderModal] = useState(false);
-  const [orderMode, setOrderMode] = useState<'inquiry' | 'order'>('inquiry');
   const [quantity, setQuantity] = useState(MIN_ORDER_QUANTITY);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    eventType: '',
-    eventDate: '',
-    guestCount: '',
-    selectedMenu: '',
-    quantity: MIN_ORDER_QUANTITY.toString(),
-    budget: '',
-    message: ''
-  });
+
+  // Order Modal State
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [orderForm, setOrderForm] = useState({ name: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -157,119 +146,65 @@ export default function ProductDetailPage() {
   const detailedDescription = product.detailed_description || product.description;
   const totalPrice = product.price * quantity;
 
-  const handleOrderClick = (mode: 'inquiry' | 'order') => {
-    setOrderMode(mode);
-    setFormData(prev => ({
-      ...prev,
-      selectedMenu: product.name,
-      quantity: quantity.toString()
-    }));
-    setShowOrderModal(true);
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeModal = () => {
-    setShowOrderModal(false);
-    setSubmitStatus('idle');
-    document.body.style.overflow = 'auto';
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.name || !formData.email || !formData.phone || !formData.eventType) {
-      alert('필수 항목을 모두 입력해주세요.');
+  const handlePayment = () => {
+    if (!product.payment_link) {
+      alert('결제 링크가 준비중입니다. 고객센터로 문의해주세요.');
       return;
     }
+    // Instead of immediate redirect, show modal
+    setShowOrderModal(true);
+  };
 
-    if (formData.message.length > 500) {
-      alert('메시지는 500자 이내로 입력해주세요.');
+  const submitOrder = async () => {
+    if (!orderForm.name || !orderForm.phone) {
+      alert('이름과 연락처를 모두 입력해주세요.');
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitStatus('idle');
 
     try {
-      const { error } = await supabase
-        .from('inquiries')
-        .insert([
-          {
-            inquiry_type: orderMode === 'order' ? 'product_order' : 'product_inquiry',
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            content: {
-              productId: product?.id,
-              productName: product?.name,
-              eventType: formData.eventType,
-              eventDate: formData.eventDate,
-              guestCount: formData.guestCount,
-              selectedMenu: formData.selectedMenu,
-              quantity: formData.quantity,
-              budget: formData.budget,
-              message: formData.message
-            }
-          }
-        ]);
+      // 1. Log order to Supabase
+      const { data: orderData, error: orderError } = await supabase
+        .from('product_orders')
+        .insert({
+          product_id: product.id,
+          product_name: product.name,
+          customer_name: orderForm.name,
+          customer_phone: orderForm.phone,
+          quantity: quantity,
+          total_price: totalPrice,
+          status: 'initiated'
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
-
-      // Send Email Notification
-      const emailContent = `
-        [${orderMode === 'order' ? '상품 주문' : '상품 문의'}]
-        - 상품명: ${product?.name}
-        - 행사유형: ${formData.eventType}
-        - 행사날짜: ${formData.eventDate}
-        - 예상인원: ${formData.guestCount}
-        - 수량: ${formData.quantity}
-        - 예산: ${formData.budget}
-        - 요청사항: ${formData.message}
-      `;
-
-      sendEmailNotification({
-        type: orderMode === 'order' ? '상품 주문' : '상품 문의',
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        content: emailContent
-      });
-
-      setSubmitStatus('success');
-
-      // Show success message as popup based on mode
-      if (orderMode === 'order') {
-        alert('입력하신 연락처로 결제링크가 전달되니 결제를 완료해주세요.\n(미결제 시 주문이 처리되지 않습니다.)');
-      } else {
-        alert('확인 후 담당 매니저가 빠르게 연락드립니다.');
+      if (orderError) {
+        console.error('Order logging failed:', orderError);
+        // We continue anyway to not block the sale, but notification might fail
       }
 
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        eventType: '',
-        eventDate: '',
-        guestCount: '',
-        selectedMenu: '',
-        quantity: MIN_ORDER_QUANTITY.toString(),
-        budget: '',
-        message: ''
-      });
-      setQuantity(MIN_ORDER_QUANTITY);
-      closeModal();
+      // 2. Send Notification
+      if (orderData) {
+        await sendOrderNotification(orderData);
+      } else {
+        // Fallback object if insert failed but we want to notify (optional, skipped for now)
+      }
+
+      // 3. Close Modal & Redirect
+      setShowOrderModal(false);
+      window.open(product.payment_link!, '_blank');
+
     } catch (error) {
-      console.error('Error submitting product inquiry:', error);
-      setSubmitStatus('error');
-      alert('문의 접수 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error('Error processing order:', error);
+      alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleInquiry = () => {
+    navigate('/', { state: { scrollTo: 'website-inquiry' } });
   };
 
   return (
@@ -366,13 +301,13 @@ export default function ProductDetailPage() {
 
                 <div className="flex gap-4">
                   <button
-                    onClick={() => handleOrderClick('inquiry')}
+                    onClick={handleInquiry}
                     className="flex-1 py-5 bg-white border-2 border-pink-400 text-pink-500 text-lg font-bold rounded-2xl shadow-lg hover:shadow-pink-200 hover:bg-pink-50 transition-all duration-300 whitespace-nowrap cursor-pointer"
                   >
                     문의하기
                   </button>
                   <button
-                    onClick={() => handleOrderClick('order')}
+                    onClick={handlePayment}
                     className="flex-1 py-5 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-lg font-bold rounded-2xl shadow-lg shadow-pink-300/50 hover:shadow-pink-300/80 hover:scale-105 transition-all duration-300 whitespace-nowrap cursor-pointer"
                   >
                     주문하기
@@ -484,211 +419,58 @@ export default function ProductDetailPage() {
         </div>
 
         <Footer />
-      </div>
 
-      {showOrderModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-          onClick={closeModal}
-        >
-          <div
-            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl border border-pink-200 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={closeModal}
-              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white/80 hover:bg-white rounded-full text-gray-700 transition-colors cursor-pointer z-10"
-            >
-              <i className="ri-close-line text-xl"></i>
-            </button>
+        {/* Order Info Modal */}
+        {showOrderModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl animate-fade-in relative">
+              <button
+                onClick={() => setShowOrderModal(false)}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <i className="ri-close-line text-2xl"></i>
+              </button>
 
-            <div className="p-8">
-              <div className="text-center mb-8">
-                <div className="inline-block px-6 py-2 bg-gradient-to-r from-pink-100 to-purple-100 backdrop-blur-xl rounded-full border border-pink-200 mb-4">
-                  <span className="text-sm font-semibold text-purple-600 tracking-wider">CATERING ORDER</span>
-                </div>
-                <h3 className="text-3xl font-bold text-gray-800 mb-2">
-                  케이터링 주문하기
-                </h3>
-                <p className="text-pink-500 text-lg font-semibold">
-                  {product.name}
-                </p>
-                <p className="text-gray-600 mt-2">
-                  수량: {quantity}개 | 총 금액:{' '}
-                  <strong className="text-pink-500">{totalPrice.toLocaleString()}원</strong>
-                </p>
-              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">주문 확인</h3>
+              <p className="text-gray-600 mb-6">주문 접수 및 알림을 위해 연락처를 입력해주세요.</p>
 
-              <form id="product-order-form" data-readdy-form onSubmit={handleSubmit} className="space-y-6">
-                <input type="hidden" name="selectedMenu" value={formData.selectedMenu} />
-                <input type="hidden" name="quantity" value={formData.quantity} />
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
-                      이름 <span className="text-pink-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 bg-white border border-purple-100 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent"
-                      placeholder="홍길동"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
-                      연락처 <span className="text-pink-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 bg-white border border-purple-100 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent"
-                      placeholder="010-1234-5678"
-                    />
-                  </div>
-                </div>
-
+              <div className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                    이메일 <span className="text-pink-500">*</span>
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">이름 (업체명)</label>
                   <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 bg-white border border-purple-100 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent"
-                    placeholder="example@email.com"
+                    type="text"
+                    value={orderForm.name}
+                    onChange={(e) => setOrderForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="홍길동"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">연락처</label>
+                  <input
+                    type="tel"
+                    value={orderForm.phone}
+                    onChange={(e) => setOrderForm(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="010-1234-5678"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
                   />
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="eventType" className="block text-sm font-semibold text-gray-700 mb-2">
-                      행사 유형 <span className="text-pink-500">*</span>
-                    </label>
-                    <select
-                      id="eventType"
-                      name="eventType"
-                      value={formData.eventType}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 bg-white border border-purple-100 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent cursor-pointer"
-                    >
-                      <option value="">선택해주세요</option>
-                      <option value="기업 미팅">기업 미팅</option>
-                      <option value="웨딩 피로연">웨딩 피로연</option>
-                      <option value="생일 파티">생일 파티</option>
-                      <option value="개업식">개업식</option>
-                      <option value="돌잔치">돌잔치</option>
-                      <option value="기타">기타</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="eventDate" className="block text-sm font-semibold text-gray-700 mb-2">
-                      행사 날짜
-                    </label>
-                    <input
-                      type="date"
-                      id="eventDate"
-                      name="eventDate"
-                      value={formData.eventDate}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-white border border-purple-100 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent cursor-pointer"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="guestCount" className="block text-sm font-semibold text-gray-700 mb-2">
-                      예상 인원
-                    </label>
-                    <input
-                      type="text"
-                      id="guestCount"
-                      name="guestCount"
-                      value={formData.guestCount}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-white border border-purple-100 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent"
-                      placeholder="예: 50명"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="budget" className="block text-sm font-semibold text-gray-700 mb-2">
-                      예산
-                    </label>
-                    <input
-                      type="text"
-                      id="budget"
-                      name="budget"
-                      value={formData.budget}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-white border border-purple-100 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent"
-                      placeholder="예: 100만원"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
-                    추가 요청사항 (500자 이내)
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    maxLength={500}
-                    rows={4}
-                    className="w-full px-4 py-3 bg-white border border-purple-100 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent resize-none"
-                    placeholder="특별한 요청사항이나 알레르기 정보 등을 입력해주세요"
-                  ></textarea>
-                  <div className="text-right text-xs text-gray-500 mt-1">
-                    {formData.message.length}/500
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-4 bg-gray-100 text-gray-700 text-base font-semibold rounded-lg hover:bg-gray-200 transition-all duration-300 disabled:opacity-50 whitespace-nowrap cursor-pointer"
-                  >
-                    {isSubmitting ? '전송 중...' : (orderMode === 'order' ? '주문 접수하기' : '이 구성 문의하기')}
-                  </button>
-                </div>
-
-                {submitStatus === 'success' && (
-                  <div className="p-4 bg-green-100 border border-green-300 rounded-lg text-center">
-                    <p className="text-green-700 text-sm font-medium">
-                      문의가 성공적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.
-                    </p>
-                  </div>
-                )}
-
-                {submitStatus === 'error' && (
-                  <div className="p-4 bg-red-100 border border-red-300 rounded-lg text-center">
-                    <p className="text-red-700 text-sm font-medium">
-                      문의 접수 중 오류가 발생했습니다. 다시 시도해주세요.
-                    </p>
-                  </div>
-                )}
-              </form>
+                <button
+                  onClick={submitOrder}
+                  disabled={isSubmitting}
+                  className="w-full py-4 mt-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-pink-300/50 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? '처리중...' : '주문 및 결제 진행하기'}
+                </button>
+                <p className="text-xs text-center text-gray-400 mt-2">
+                  버튼을 누르면 결제 페이지로 이동합니다.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </>
   );
 }
