@@ -11,6 +11,7 @@
   features: string[];
   ingredients: string[];
   suitable_for: string[];
+  options?: { name: string; values: string[] }[];
 }
 
 export const products: Product[] = [

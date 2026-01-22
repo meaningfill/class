@@ -4,7 +4,7 @@
     <loc>https://meaningfill.co.kr/</loc>
     <lastmod>2026-01-21</lastmod>
     <changefreq>daily</changefreq>
-    <priority>1.0</priority>
+    <priority>1</priority>
   </url>
   <url>
     <loc>https://meaningfill.co.kr/classes</loc>
@@ -23,5 +23,29 @@
     <lastmod>2026-01-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://meaningfill.co.kr/portfolio</loc>
+    <lastmod>2026-01-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://meaningfill.co.kr/blog/9cf56c3d-345c-4349-8e59-b2d315d867aa</loc>
+    <lastmod>2026-01-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://meaningfill.co.kr/blog/0afef764-0bf6-486e-97ba-dd7110b846c9</loc>
+    <lastmod>2026-01-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://meaningfill.co.kr/blog/27b9c840-40f1-4b1c-b28e-89b199b30965</loc>
+    <lastmod>2026-01-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

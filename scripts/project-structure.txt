@@ -1,9 +1,0 @@
-Folder PATH listing for volume WINDOWS
-Volume serial number is 6D21-296E
-C:.
-    commit.bat
-    project-structure.txt
-    structure.bat
-    
-No subfolders exist 
-

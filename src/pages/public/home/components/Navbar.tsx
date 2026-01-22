@@ -1,11 +1,15 @@
 ﻿import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useCartStore } from '../../../../store/useCartStore';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { toggleCart, getTotalItems } = useCartStore();
+  const totalItems = getTotalItems();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,8 +65,8 @@ export default function Navbar() {
           <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogoClick}>
             <div
               className={`w-12 h-12 flex items-center justify-center rounded-full ${isScrolled
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-600'
-                  : 'bg-gradient-to-r from-pink-400 to-purple-500'
+                ? 'bg-gradient-to-r from-pink-500 to-purple-600'
+                : 'bg-gradient-to-r from-pink-400 to-purple-500'
                 }`}
             >
               <i className="ri-restaurant-2-line text-2xl text-white"></i>
@@ -101,6 +105,27 @@ export default function Navbar() {
               블로그
             </button>
             <button
+              onClick={() => navigateToPage('/ai-consultant')}
+              className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1 ${isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
+                }`}
+            >
+              <i className="ri-magic-line text-pink-500"></i>AI 추천
+            </button>
+
+            {/* Cart Icon (Desktop) */}
+            <button
+              onClick={toggleCart}
+              className={`relative p-2 rounded-full hover:bg-black/5 transition-colors group ${isScrolled ? 'text-slate-700' : 'text-slate-800'}`}
+            >
+              <i className="ri-shopping-cart-2-line text-2xl group-hover:text-pink-500 transition-colors"></i>
+              {totalItems > 0 && (
+                <span className="absolute top-0 right-0 w-5 h-5 bg-pink-500 text-white text-xs font-bold flex items-center justify-center rounded-full">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+
+            <button
               onClick={() => scrollToSection('website-inquiry')}
               className="px-6 py-2.5 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-[15px] font-bold rounded-full hover:shadow-lg hover:shadow-pink-300/50 transition-all duration-300 whitespace-nowrap cursor-pointer"
             >
@@ -108,14 +133,29 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`md:hidden w-10 h-10 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${isScrolled ? 'text-slate-900 hover:bg-slate-100' : 'text-slate-900 hover:bg-white/20'
-              }`}
-          >
-            <i className={`text-2xl ${isMobileMenuOpen ? 'ri-close-line' : 'ri-menu-line'}`}></i>
-          </button>
+          <div className="md:hidden flex items-center gap-4">
+            {/* Cart Icon (Mobile) */}
+            <button
+              onClick={toggleCart}
+              className={`relative p-2 rounded-full hover:bg-black/5 transition-colors ${isScrolled ? 'text-slate-900' : 'text-slate-900'}`}
+            >
+              <i className="ri-shopping-cart-2-line text-2xl"></i>
+              {totalItems > 0 && (
+                <span className="absolute top-0 right-0 w-5 h-5 bg-pink-500 text-white text-xs font-bold flex items-center justify-center rounded-full">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${isScrolled ? 'text-slate-900 hover:bg-slate-100' : 'text-slate-900 hover:bg-white/20'
+                }`}
+            >
+              <i className={`text-2xl ${isMobileMenuOpen ? 'ri-close-line' : 'ri-menu-line'}`}></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -146,6 +186,12 @@ export default function Navbar() {
               className="block w-full text-left px-4 py-2 text-[15px] font-bold text-slate-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
               블로그
+            </button>
+            <button
+              onClick={() => navigateToPage('/ai-consultant')}
+              className="block w-full text-left px-4 py-2 text-[15px] font-bold text-slate-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors whitespace-nowrap cursor-pointer flex items-center gap-2"
+            >
+              <i className="ri-magic-line text-pink-500"></i>AI 추천
             </button>
             <button
               onClick={() => scrollToSection('website-inquiry')}

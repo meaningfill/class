@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import SEO from '../../../components/common/SEO';
 import { supabase, BlogPost } from '../../../services/supabase';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
@@ -16,46 +18,21 @@ export default function BlogPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  useEffect(() => {
-    const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
+  const siteUrl = import.meta.env.VITE_SITE_URL || 'https://meaningfill.co.kr';
 
-    const blogSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'Blog',
-      name: '미닝필 블로그',
-      description: '케이터링 창업과 비즈니스 운영에 도움이 되는 정보를 공유합니다.',
-      url: `${siteUrl}/blog`,
-      publisher: {
-        '@type': 'Organization',
-        name: '미닝필',
-        url: siteUrl,
-      },
-    };
+  const blogSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: '미닝필 블로그',
+    description: '케이터링 창업과 비즈니스 운영에 도움이 되는 정보를 공유합니다.',
+    url: `${siteUrl}/blog`,
+    publisher: {
+      '@type': 'Organization',
+      name: '미닝필',
+      url: siteUrl,
+    },
+  };
 
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(blogSchema);
-    document.head.appendChild(script);
-
-    document.title = '블로그 | 미닝필';
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        'content',
-        '케이터링 창업과 비즈니스 운영에 도움이 되는 정보를 공유합니다. 미닝필 전문가의 블로그를 확인하세요.'
-      );
-    }
-
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) {
-      ogTitle.setAttribute('content', '블로그 | 미닝필');
-    }
-
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   const fetchPosts = async () => {
     try {
@@ -75,6 +52,13 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <SEO
+        title="블로그"
+        description="케이터링 창업과 비즈니스 운영에 도움이 되는 정보를 공유합니다. 미닝필 전문가의 블로그를 확인하세요."
+      />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(blogSchema)}</script>
+      </Helmet>
       <Navbar />
 
       <section className="relative pt-32 pb-20 bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100">

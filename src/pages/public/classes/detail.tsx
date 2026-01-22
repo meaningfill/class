@@ -1,4 +1,5 @@
 ﻿import { Link } from 'react-router-dom';
+import SEO from '../../../components/common/SEO';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
 
@@ -150,6 +151,10 @@ const processSteps = [
 export default function ClassDetailPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFB]">
+      <SEO
+        title="케이터링 창업 클래스 - 4일 완성 커리큘럼"
+        description="레시피, 대량조리법, 패키징디자인, 웹사이트 구축까지. 4일만에 완성하는 케이터링 실전 창업 클래스 커리큘럼을 확인하세요."
+      />
       <Navbar />
 
       {/* Breadcrumb */}

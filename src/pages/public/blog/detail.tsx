@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
+import SEO from '../../../components/common/SEO';
 import { supabase, BlogPost } from '../../../services/supabase';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
@@ -27,69 +29,35 @@ export default function BlogDetailPage() {
     }
   }, [id]);
 
-  useEffect(() => {
-    if (post) {
-      const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
+  // SEO Schema
+  const siteUrl = import.meta.env.VITE_SITE_URL || 'https://meaningfill.co.kr';
 
-      const blogPostingSchema = {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": post.title,
-        "description": post.excerpt,
-        "image": post.image_url,
-        "datePublished": post.published_at,
-        "dateModified": post.published_at,
-        "author": {
-          "@type": "Person",
-          "name": "Master"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "미닝필",
-          "url": siteUrl,
-          "logo": {
-            "@type": "ImageObject",
-            "url": `${siteUrl}/logo.png`
-          }
-        },
-        "mainEntityOfPage": {
-          "@type": "WebPage",
-          "@id": `${siteUrl}/blog/${post.id}`
-        }
-      };
-
-      const script = document.createElement('script');
-      script.type = 'application/ld+json';
-      script.text = JSON.stringify(blogPostingSchema);
-      document.head.appendChild(script);
-
-      document.title = `${post.title} | 미닝필`;
-
-      const metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription) {
-        metaDescription.setAttribute('content', post.excerpt);
+  const blogPostingSchema = post ? {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "description": post.excerpt,
+    "image": post.image_url,
+    "datePublished": post.published_at,
+    "dateModified": post.published_at,
+    "author": {
+      "@type": "Person",
+      "name": "Master"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "미닝필",
+      "url": siteUrl,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${siteUrl}/logo.png`
       }
-
-      const ogTitle = document.querySelector('meta[property="og:title"]');
-      if (ogTitle) {
-        ogTitle.setAttribute('content', post.title);
-      }
-
-      const ogDescription = document.querySelector('meta[property="og:description"]');
-      if (ogDescription) {
-        ogDescription.setAttribute('content', post.excerpt);
-      }
-
-      const ogImage = document.querySelector('meta[property="og:image"]');
-      if (ogImage) {
-        ogImage.setAttribute('content', post.image_url);
-      }
-
-      return () => {
-        document.head.removeChild(script);
-      };
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `${siteUrl}/blog/${post.id}`
     }
-  }, [post]);
+  } : null;
 
   const fetchPost = async () => {
     try {
@@ -143,6 +111,18 @@ export default function BlogDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {post && (
+        <>
+          <SEO
+            title={post.title}
+            description={post.excerpt}
+            image={post.image_url}
+          />
+          <Helmet>
+            <script type="application/ld+json">{JSON.stringify(blogPostingSchema)}</script>
+          </Helmet>
+        </>
+      )}
       <Navbar />
 
       <section className="relative mt-20 pt-40 pb-20">

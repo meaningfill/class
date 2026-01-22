@@ -1,4 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import SEO from '../../../components/common/SEO';
 import { supabase, Portfolio, Product } from '../../../services/supabase';
 import Navbar from '../home/components/Navbar';
 import Footer from '../home/components/Footer';
@@ -16,47 +18,21 @@ export default function PortfolioPage() {
     Promise.all([fetchPortfolio(), fetchProducts()]);
   }, []);
 
-  useEffect(() => {
-    const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
+  const siteUrl = import.meta.env.VITE_SITE_URL || 'https://meaningfill.co.kr';
 
-    const imageGallerySchema = {
-      '@context': 'https://schema.org',
-      '@type': 'ImageGallery',
-      name: '미닝필 포트폴리오',
-      description: '다양한 행사와 이벤트에 사용된 케이터링 사진을 소개합니다.',
-      url: `${siteUrl}/portfolio`,
-      image: portfolio.map((item) => ({
-        '@type': 'ImageObject',
-        contentUrl: item.image_url,
-        name: item.title,
-        description: item.description,
-      })),
-    };
-
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(imageGallerySchema);
-    document.head.appendChild(script);
-
-    document.title = '포트폴리오 | 미닝필';
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        'content',
-        '다양한 행사와 이벤트에 사용된 케이터링 포트폴리오를 확인하세요. 기업 행사, 웨딩, 파티 등 실제 사례를 담았습니다.'
-      );
-    }
-
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) {
-      ogTitle.setAttribute('content', '포트폴리오 | 미닝필');
-    }
-
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, [portfolio]);
+  const imageGallerySchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ImageGallery',
+    name: '미닝필 포트폴리오',
+    description: '다양한 행사와 이벤트에 사용된 케이터링 사진을 소개합니다.',
+    url: `${siteUrl}/portfolio`,
+    image: portfolio.map((item) => ({
+      '@type': 'ImageObject',
+      contentUrl: item.image_url,
+      name: item.title,
+      description: item.description,
+    })),
+  };
 
   const fetchPortfolio = async () => {
     try {
@@ -96,6 +72,13 @@ export default function PortfolioPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <SEO
+        title="포트폴리오"
+        description="다양한 행사와 이벤트에 사용된 케이터링 포트폴리오를 확인하세요. 기업 행사, 웨딩, 파티 등 실제 사례를 담았습니다."
+      />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(imageGallerySchema)}</script>
+      </Helmet>
       <Navbar />
 
       <section className="relative pt-32 pb-20 bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100">

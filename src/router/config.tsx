@@ -19,8 +19,9 @@ const AdminProductsAI = lazy(() => import('../pages/admin/products-ai'));
 const AdminContactSettings = lazy(() => import('../pages/admin/contact'));
 const AdminPublishQueue = lazy(() => import('../pages/admin/publish-queue'));
 const AdminNewsletter = lazy(() => import('../pages/admin/newsletter'));
+const AdminPayments = lazy(() => import('../pages/admin/payments'));
 
-const AIAssistant = lazy(() => import('../AIAssistant'));
+const AIAssistant = lazy(() => import('../components/features/AIAssistant'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 
 const routes: RouteObject[] = [
@@ -99,6 +100,10 @@ const routes: RouteObject[] = [
   {
     path: '/admin/newsletter',
     element: <AdminNewsletter />,
+  },
+  {
+    path: '/admin/payments',
+    element: <AdminPayments />,
   },
   {
     path: '*',

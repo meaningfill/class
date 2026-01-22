@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../../../services/supabase';
 import { sendEmailNotification } from '../../../../services/email';
+import { sendInquiryNotification } from '../../../../services/notification';
 
 export default function WebsiteInquirySection() {
     const [formData, setFormData] = useState({
@@ -51,6 +52,15 @@ export default function WebsiteInquirySection() {
                 email: formData.email,
                 phone: formData.phone,
                 content: emailContent
+            });
+
+            // Send Slack Notification
+            await sendInquiryNotification({
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                budget: formData.budget,
+                message: formData.message
             });
 
             setStatus('success');

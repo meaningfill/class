@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import SEO from '../../../components/common/SEO';
 import { CiderPayButton } from '../../../components/payment/PaymentButton';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../home/components/Navbar';
@@ -6,6 +8,7 @@ import Footer from '../home/components/Footer';
 import { supabase } from '../../../services/supabase';
 import type { Product } from '../../../services/supabase';
 import { sendOrderNotification } from '../../../services/notification';
+import { useCartStore } from '../../../store/useCartStore';
 
 const MIN_ORDER_QUANTITY = 30;
 
@@ -21,6 +24,24 @@ export default function ProductDetailPage() {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [orderForm, setOrderForm] = useState({ name: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Cart Store
+  const { addItem, openCart } = useCartStore();
+
+  const handleAddToCart = () => {
+    if (!product) return;
+
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      image_url: product.image_url,
+      quantity: quantity
+    });
+
+    // Open cart to show visual confirmation
+    openCart();
+  };
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -54,65 +75,34 @@ export default function ProductDetailPage() {
     loadProduct();
   }, [id]);
 
+  const siteUrl = import.meta.env.VITE_SITE_URL || 'https://meaningfill.co.kr';
+  const seoDescription = product ? (product.seo_description || product.detailed_description || product.description) : '';
+  const seoTitle = product ? (product.seo_title || product.name) : '';
+
+  const productSchema = product ? {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: seoDescription,
+    image: product.image_url,
+    offers: {
+      '@type': 'Offer',
+      price: product.price,
+      priceCurrency: 'KRW',
+      availability: 'https://schema.org/InStock',
+      url: `${siteUrl}/product/${product.id}`
+    },
+    brand: {
+      '@type': 'Brand',
+      name: '미닝필'
+    },
+    category: product.event_type || '케이터링'
+  } : null;
+
   useEffect(() => {
-    if (!product) return;
-
-    const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
-    const description = product.seo_description || product.detailed_description || product.description;
-
-    const productSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'Product',
-      name: product.name,
-      description,
-      image: product.image_url,
-      offers: {
-        '@type': 'Offer',
-        price: product.price,
-        priceCurrency: 'KRW',
-        availability: 'https://schema.org/InStock',
-        url: `${siteUrl}/product/${product.id}`
-      },
-      brand: {
-        '@type': 'Brand',
-        name: '미닝필'
-      },
-      category: product.event_type || '케이터링'
-    };
-
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(productSchema);
-    document.head.appendChild(script);
-
-    const seoTitle = product.seo_title || product.name;
-    document.title = `${seoTitle} | 미닝필`;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', description);
+    if (product) {
+      window.scrollTo(0, 0);
     }
-
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) {
-      ogTitle.setAttribute('content', seoTitle);
-    }
-
-    const ogDescription = document.querySelector('meta[property="og:description"]');
-    if (ogDescription) {
-      ogDescription.setAttribute('content', description);
-    }
-
-    const ogImage = document.querySelector('meta[property="og:image"]');
-    if (ogImage) {
-      ogImage.setAttribute('content', product.image_url);
-    }
-
-    window.scrollTo(0, 0);
-
-    return () => {
-      document.head.removeChild(script);
-    };
   }, [product]);
 
   if (loading) {
@@ -224,6 +214,18 @@ export default function ProductDetailPage() {
 
   return (
     <>
+      {product && (
+        <>
+          <SEO
+            title={seoTitle}
+            description={seoDescription}
+            image={product.image_url}
+          />
+          <Helmet>
+            <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
+          </Helmet>
+        </>
+      )}
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
         <Navbar />
 
@@ -316,10 +318,10 @@ export default function ProductDetailPage() {
 
                 <div className="flex gap-4">
                   <button
-                    onClick={handleInquiry}
+                    onClick={handleAddToCart}
                     className="flex-1 py-5 bg-white border-2 border-pink-400 text-pink-500 text-lg font-bold rounded-2xl shadow-lg hover:shadow-pink-200 hover:bg-pink-50 transition-all duration-300 whitespace-nowrap cursor-pointer"
                   >
-                    문의하기
+                    장바구니 담기
                   </button>
                   <button
                     onClick={handlePayment}
