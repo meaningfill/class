@@ -77,6 +77,7 @@ export const generatePaymentLink = async (
             payUniqueNo: result.payUniqueNo
         };
     } catch (error) {
+        console.error('CiderPay API Error:', error);
         if (error instanceof Error) {
             throw error;
         }

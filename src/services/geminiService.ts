@@ -34,7 +34,7 @@ export class GeminiService {
     const ai = this.getAI();
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash', // Use Flash for speed/cost
+        model: 'gemini-2.0-flash-001', // Upgraded to 2.0
         contents: [{ role: 'user', parts: [{ text: message }] }],
         config: {
           systemInstruction: systemPrompt || SYSTEM_INSTRUCTION,
@@ -42,10 +42,22 @@ export class GeminiService {
         },
       });
 
-      return response.text || "죄송합니다. 분석 내용을 생성하지 못했습니다.";
+      // Robust Text Extraction (as per CLI fix)
+      let text = "";
+      // @ts-ignore
+      if (typeof response.text === 'function') {
+        // @ts-ignore
+        text = response.text();
+      } else if (response.text) {
+        text = response.text;
+      } else if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
+        text = response.candidates[0].content.parts[0].text;
+      }
+
+      return text || "죄송합니다. 분석 내용을 생성하지 못했습니다.";
     } catch (error) {
       console.error("Gemini API Error:", error);
-      return "현재 원가 분석 서버 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.";
+      return "죄송합니다. AI 상담 연결이 지연되고 있습니다. 잠시 후 다시 말씀해 주세요.";
     }
   }
 
@@ -54,7 +66,7 @@ export class GeminiService {
     const ai = this.getAI();
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash-001',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           responseMimeType: "application/json", // Force JSON
@@ -62,8 +74,19 @@ export class GeminiService {
         },
       });
 
-      const text = response.text || "{}";
-      return JSON.parse(text);
+      // Robust Text Extraction (JSON)
+      let text = "";
+      // @ts-ignore
+      if (typeof response.text === 'function') {
+        // @ts-ignore
+        text = response.text();
+      } else if (response.text) {
+        text = response.text;
+      } else if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
+        text = response.candidates[0].content.parts[0].text;
+      }
+
+      return JSON.parse(text || "{}");
     } catch (error) {
       console.error("Gemini JSON Error:", error);
       return {};

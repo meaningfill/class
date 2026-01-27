@@ -8,9 +8,10 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const PROJECT_ROOT = path.resolve(__dirname, '../'); // Assuming scripts/ is one level deep
-const BRAIN_DIR = 'C:\\Users\\LG\\.gemini\\antigravity\\brain\\41b715ab-7c90-4a0d-915c-b49192d44946';
-const OUTPUT_PATH = path.join(BRAIN_DIR, 'synthetic_v5_2000.json');
+const PROJECT_ROOT = path.resolve(__dirname, '../');
+// Changed output path to local data directory for project portability
+const OUTPUT_DIR = path.join(PROJECT_ROOT, 'data');
+const OUTPUT_PATH = path.join(OUTPUT_DIR, 'synthetic_qa.json');
 
 const apiKey = process.env.VITE_API_KEY;
 if (!apiKey) {
@@ -28,10 +29,12 @@ const SCENARIOS = [
     "Menu Customization (Vegan/Allergy)",
     "Payment & Invoice (Tax Bill/Card)",
     "Delivery & Logistics Inquiry",
-    "Order Cancellation & Refunds",
+    "Order Cancellation & Refunds (Strict 7-day rule)",
     "Food Waste & Cleanup Policy",
     "Urgent Orders (< 3 days)",
-    "General Brand & Class Inquiries"
+    "General Brand & Class Inquiries",
+    "Website Creation Services",
+    "Sandwich Class Details"
 ];
 
 const TONE_RULES = `
@@ -65,7 +68,8 @@ async function generateBatch(scenario, count) {
         if (fs.existsSync(llmPath)) {
             const rawLLM = fs.readFileSync(llmPath, 'utf-8');
             const lines = rawLLM.split('\n').slice(1).filter(l => l.length > 20);
-            llmExamples = lines.sort(() => 0.5 - Math.random()).slice(0, 5).join('\n');
+            // Provide more examples to ground the model better
+            llmExamples = lines.sort(() => 0.5 - Math.random()).slice(0, 15).join('\n');
         }
     } catch (e) { }
 
@@ -89,21 +93,21 @@ async function generateBatch(scenario, count) {
 You are the **Concierge** for "MeaningFill" (미닝필).
 Generate ${count} distinct Q&A pairs in Korean about "${scenario}".
 
-**CRITICAL POLICY SOURCE (STRICT ADHERENCE):**
+**CRITICAL POLICY SOURCE (GOLD STANDARD):**
+These are the ONLY valid business rules. Do not invent new policies.
 ${llmExamples}
 
 **STYLE SOURCES:**
 [Natural Tone Ref]
 ${songysExamples}
 
-[Complex Flow Ref]
-${aiHubExamples}
-
-**STRICT BUSINESS RULES:**
-1.  **Cleanup**: Not provided. Refer external if asked.
-2.  **Refunds**: 7+ days = 100% (minus 100k deposit). <7 days = No refund.
+**STRICT GENERATION RULES:**
+1.  **Anti-Hallucination**: If a scenario requires specific details (like prices, locations, specific constraints) NOT found in the 'CRITICAL POLICY SOURCE', **YOU MUST GENERATE AN ANSWER THAT DIRECTS THE USER TO A MANAGER**.
+    *   Example: "상세한 견적은 담당 매니저와 상담이 필요합니다. 연결해 드릴까요?"
+2.  **Refund Policy**: Strict 7-day rule. 100k KRW deposit deduction.
 3.  **Min Order**: 20 servings.
-4.  **Vegan**: Partial change only if Total >= 50.
+4.  **Language**: Korean (Honorifics/존댓말).
+5.  **Format**: STRICT JSON Array.
 
 **OUTPUT FORMAT:**
 Return ONLY a valid JSON array.
@@ -134,10 +138,13 @@ async function main() {
     let allData = [];
     const targetTotal = 2000;
     const itemsPerBatch = 20;
-    // const targetPerScenario = Math.ceil(targetTotal / SCENARIOS.length);
     const loopsPerScenario = Math.ceil((targetTotal / SCENARIOS.length) / itemsPerBatch);
 
-    console.log(`Starting generation for 2000 items (${loopsPerScenario} batches of ${itemsPerBatch} per 10 scenarios)...`);
+    console.log(`Starting generation for ~${targetTotal} items...`);
+    // Ensure output directory exists
+    if (!fs.existsSync(OUTPUT_DIR)) {
+        fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+    }
 
     for (const scenario of SCENARIOS) {
         console.log(`Generating scenario: ${scenario}...`);
@@ -145,14 +152,15 @@ async function main() {
             const batch = await generateBatch(scenario, itemsPerBatch);
             if (batch.length > 0) {
                 allData = allData.concat(batch);
-                console.log(`  + Generated ${batch.length} items. Total: ${allData.length}`);
+                process.stdout.write(`.`); // Progress indicator
             }
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 1000)); // Rate limiting
         }
+        console.log(`\n  + Completed scenario. Total so far: ${allData.length}`);
     }
 
     fs.writeFileSync(OUTPUT_PATH, JSON.stringify(allData, null, 2));
-    console.log(`Done. Saved to ${OUTPUT_PATH}`);
+    console.log(`\nDone. Saved ${allData.length} items to ${OUTPUT_PATH}`);
 }
 
 main();

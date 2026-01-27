@@ -66,6 +66,16 @@ const AIAssistant: React.FC = () => {
             </div>
           </div>
 
+          {/* Disclaimer Banner */}
+          <div className="bg-amber-50 border-b border-amber-100 px-6 py-3 flex items-start gap-3">
+            <i className="ri-error-warning-line text-amber-500 mt-0.5"></i>
+            <div className="text-xs text-amber-800 space-y-0.5">
+              <p className="font-semibold">AI 상담 안내</p>
+              <p>본 상담은 인공지능이 진행하며, 답변이 부정확할 수 있습니다. 꼼꼼한 확인이 필요합니다.</p>
+              <p className="text-amber-600 mt-1">🔒 원활한 서비스 개선을 위해 대화 내용은 저장됩니다.</p>
+            </div>
+          </div>
+
           {/* Chat Area */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
             {messages.length === 0 && (

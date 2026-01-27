@@ -1,6 +1,8 @@
 ﻿import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCartStore } from '../../../../store/useCartStore';
+import * as analytics from '../../../../utils/analytics';
+
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -91,7 +93,10 @@ export default function Navbar() {
               클래스소개
             </button>
             <button
-              onClick={() => scrollToSection('portfolio')}
+              onClick={() => {
+                analytics.event({ action: 'click', category: 'navigation', label: 'portfolio_catering' });
+                scrollToSection('portfolio');
+              }}
               className={`text-[15px] font-bold transition-colors whitespace-nowrap cursor-pointer ${isScrolled ? 'text-slate-700 hover:text-purple-600' : 'text-slate-800 hover:text-purple-600'
                 }`}
             >
@@ -126,7 +131,10 @@ export default function Navbar() {
             </button>
 
             <button
-              onClick={() => scrollToSection('website-inquiry')}
+              onClick={() => {
+                analytics.event({ action: 'click', category: 'navigation', label: 'website_inquiry_nav' });
+                scrollToSection('website-inquiry');
+              }}
               className="px-6 py-2.5 bg-gradient-to-r from-pink-400 to-purple-400 text-white text-[15px] font-bold rounded-full hover:shadow-lg hover:shadow-pink-300/50 transition-all duration-300 whitespace-nowrap cursor-pointer"
             >
               웹사이트 제작문의

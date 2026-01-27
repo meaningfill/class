@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../../../../services/supabase';
 import { sendEmailNotification } from '../../../../services/email';
 import { sendInquiryNotification } from '../../../../services/notification';
+import * as analytics from '../../../../utils/analytics';
 
 export default function WebsiteInquirySection() {
     const [formData, setFormData] = useState({
@@ -61,6 +62,13 @@ export default function WebsiteInquirySection() {
                 phone: formData.phone,
                 budget: formData.budget,
                 message: formData.message
+            });
+
+            analytics.event({
+                action: 'submit',
+                category: 'form',
+                label: 'website_inquiry',
+                value: parseInt(formData.budget.replace(/[^0-9]/g, '')) || 0
             });
 
             setStatus('success');

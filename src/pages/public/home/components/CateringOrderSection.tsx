@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../../../services/supabase';
 import { sendEmailNotification } from '../../../../services/email';
+import * as analytics from '../../../../utils/analytics';
 
 export default function CateringOrderSection() {
   const [formData, setFormData] = useState({
@@ -79,6 +80,13 @@ export default function CateringOrderSection() {
         email: formData.email,
         phone: formData.phone,
         content: emailContent
+      });
+
+      analytics.event({
+        action: 'submit',
+        category: 'form',
+        label: 'catering_order',
+        value: parseInt(formData.guestCount) || 0
       });
 
       setSubmitStatus('success');
